@@ -20,7 +20,8 @@ This is a simple example:
 
 
 
-
+Functions
+**********************
 .. currentmodule:: overlay_arrows_and_more.overlay
 .. autofunction:: wnd_proc
 

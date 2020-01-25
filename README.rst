@@ -19,6 +19,7 @@ This is a simple example:
     ooaam.finalize()
 
 .. code-block:: c
+
     import overlay_arrays_and_more as oaam
 
     ooaam.initialize()

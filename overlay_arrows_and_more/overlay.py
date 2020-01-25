@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import win32api, win32con, win32gui, win32ui
+import win32api
+import win32con
+import win32gui
+import win32ui
 
 
 def wnd_proc(h_wnd, message, w_param, l_param):

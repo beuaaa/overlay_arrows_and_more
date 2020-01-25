@@ -1,4 +1,13 @@
 
+*****
+Title
+*****
+
+subtitle
+########
+
+subsubtitle
+**********************
 
 This is a simple example:
 ::

@@ -5,9 +5,15 @@ Overlay arrays and more
 
 Description
 ###########
+The 'Overlay arrays and more' library displays a transparent window on top of all other windows. The transparent window serves as a support for adding graphical elements such as arrows, rectangles, circles, text, etc...
 
-subsubtitle
-***********
+Installation
+############
+ pip install overlay_arrows_and_more
+
+
+Use
+###
 
 This is a simple example:
 

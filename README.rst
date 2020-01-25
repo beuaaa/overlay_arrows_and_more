@@ -1,13 +1,13 @@
 
-*****
-Title
-*****
+***********************
+Overlay arrays and more
+***********************
 
-subtitle
-########
+Description
+###########
 
 subsubtitle
-**********************
+***********
 
 This is a simple example:
 ::
@@ -18,11 +18,16 @@ This is a simple example:
     ooaam.add_element(geometry=rectangle, x=0, y=0, width=20, height=20)
     ooaam.finalize()
 
+.. code-block:: c
+    import overlay_arrays_and_more as oaam
 
+    ooaam.initialize()
+    ooaam.add_element(geometry=rectangle, x=0, y=0, width=20, height=20)
+    ooaam.finalize()
 
 Functions
 **********************
-.. currentmodule:: overlay_arrows_and_more.overlay
+.. automodule:: overlay_arrows_and_more.overlay
 .. autofunction:: wnd_proc
 
 To be completed

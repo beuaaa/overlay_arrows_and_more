@@ -12,7 +12,7 @@ This is a simple example:
 
 
 
-.. currentmodule:: overlay
+.. currentmodule:: overlay_arrows_and_mode.overlay
 .. autofunction:: wnd_proc
 
 To be completed

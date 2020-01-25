@@ -7,6 +7,14 @@ import win32ui
 
 
 def wnd_proc(h_wnd, message, w_param, l_param):
+	"""Displays a transparent window with some graphic elements
+
+	Displays a transparent window with some graphic elements
+
+	:param h_wnd: an input argument
+
+	:returns: nothing
+	"""
 	if message == win32con.WM_PAINT:
 		hdc, paint_struct = win32gui.BeginPaint(h_wnd)
 

@@ -3,6 +3,9 @@
 Overlay arrays and more
 ***********************
 
+**WARNING:**
+This library is still at a very early stage of development.
+
 Description
 ###########
 The 'Overlay arrays and more' library displays a transparent window on top of all other windows. The transparent window serves as a support for adding graphical elements such as arrows, rectangles, circles, text, etc...

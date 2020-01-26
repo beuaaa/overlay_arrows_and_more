@@ -12,8 +12,8 @@ Installation
  pip install overlay_arrows_and_more
 
 
-Use
-###
+Usage
+#####
 
 This is a simple example:
 

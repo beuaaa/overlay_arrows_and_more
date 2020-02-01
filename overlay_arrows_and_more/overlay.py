@@ -12,7 +12,8 @@ from enum import Enum
 
 class Shape(Enum):
 	rectangle = 0
-	arrow = 1
+	ellipse = 1
+	arrow = 2
 
 
 class TransparentWindow(Thread):
@@ -51,7 +52,7 @@ class TransparentWindow(Thread):
 			None  # lpParam
 		)
 
-		win32gui.SetLayeredWindowAttributes(self.h_window, 0x00ffffff, 255, win32con.LWA_COLORKEY | win32con.LWA_ALPHA)
+		win32gui.SetLayeredWindowAttributes(self.h_window, 0x00ffffff, 128, win32con.LWA_COLORKEY | win32con.LWA_ALPHA)
 		win32gui.SetWindowPos(self.h_window, win32con.HWND_TOPMOST, 0, 0, 0, 0,
 							  win32con.SWP_NOACTIVATE | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_SHOWWINDOW)
 
@@ -60,16 +61,12 @@ class TransparentWindow(Thread):
 	def refresh(self):
 		win32gui.InvalidateRect(self.h_window, None, True)
 
-	def get_rectangles(self):
-		return self.rectangle_list
 
+graphical_elements = []
 
-rectangle_list = []
-
-def add(geometry=Shape.rectangle, x=0, y=0, width=22, height=22):
-	global rectangle_list
-	if geometry is Shape.rectangle:
-		rectangle_list.append([x, y, width, height])
+def add(**geometry):
+	global graphical_elements
+	graphical_elements.append(geometry)
 
 def wnd_proc(h_wnd, message, w_param, l_param):
 	"""Displays a transparent window with some graphic elements
@@ -80,37 +77,42 @@ def wnd_proc(h_wnd, message, w_param, l_param):
 
 	:returns: nothing
 	"""
-	global rectangle_list
+	global graphical_elements
 	if message == win32con.WM_PAINT:
 		hdc, paint_struct = win32gui.BeginPaint(h_wnd)
-
-		dpi_scale = win32ui.GetDeviceCaps(hdc, win32con.LOGPIXELSX) / 60.0
-		font_size = 8
-
-		lf = win32gui.LOGFONT()
-		lf.lfFaceName = "Times New Roman"
-		lf.lfHeight = int(round(dpi_scale * font_size))
-		hf = win32gui.CreateFontIndirect(lf)
-		win32gui.SelectObject(hdc, hf)
-
-		rect = win32gui.GetClientRect(h_wnd)
 		win32gui.BringWindowToTop(h_wnd)
 
-		try:
-			pen = win32gui.CreatePen(win32con.PS_GEOMETRIC, 5, win32api.RGB(255, 0, 0))
+		for r in graphical_elements:
 
+			if 'color' in r:
+				color_r = r['color'][0]
+				color_g = r['color'][1]
+				color_b = r['color'][2]
+			else:
+				color_r = 255
+				color_g = 0
+				color_b = 0
+
+			if 'thickness' in r:
+				thickness = r['thickness']
+			else:
+				thickness = 5
+
+			pen = win32gui.CreatePen(win32con.PS_GEOMETRIC, thickness, win32api.RGB(color_r, color_g, color_b))
 			win32gui.SelectObject(hdc, pen)
-			win32gui.Ellipse(hdc, 10, 10, 40, 40)
 
-			for r in rectangle_list:
-				win32gui.Rectangle(hdc, r[0], r[1], r[0] + r[2], r[1] + r[3])
+			if r['geometry'] is Shape.rectangle:
+				win32gui.Rectangle(hdc, r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height'])
 
+				brush = win32gui.CreateHatchBrush(win32con.HS_DIAGCROSS, win32api.RGB(0, 0, 255))
+				win32gui.SelectObject(hdc, brush)
 
+				win32gui.ExtFloodFill(hdc, r['x']+ r['width']/2, r['y']+ r['height']/2, win32api.RGB(color_r, color_g, color_b), win32con.FLOODFILLBORDER)
+			elif r['geometry'] is Shape.ellipse:
+				win32gui.Ellipse(hdc, r['x'], r['y'], r['width'], r['height'])
+			else:
+				print('Unknown geometry of graphical element: ' + r)
 
-		except:
-			# exc_type, exc_value, exc_traceback = sys.exc_info()
-			# print(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
-			pass
 
 		win32gui.EndPaint(h_wnd, paint_struct)
 		return 0
@@ -126,6 +128,7 @@ def wnd_proc(h_wnd, message, w_param, l_param):
 if __name__ == '__main__':
 	transparent_window = TransparentWindow()
 	transparent_window.start()
-	add(geometry=Shape.rectangle, x=100, y=100, width=100, height=100)
-	add(geometry=Shape.rectangle, x=300, y=100, width=100, height=100)
+	add(geometry=Shape.ellipse, x=10, y=10, width=40, height=40)
+	add(geometry=Shape.rectangle, x=100, y=100, width=100, height=100, color=(0, 0, 255))
+	add(geometry=Shape.rectangle, x=300, y=100, width=100, height=100, thickness=10, color=(0, 255, 0))
 	transparent_window.refresh()

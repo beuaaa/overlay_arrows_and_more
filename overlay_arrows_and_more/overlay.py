@@ -125,6 +125,9 @@ class Overlay(Thread):
 	def add(self, **geometry):
 		self.graphical_elements.append(geometry)
 
+	def clear_all(self):
+		self.graphical_elements.clear()
+
 
 if __name__ == '__main__':
 

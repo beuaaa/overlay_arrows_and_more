@@ -15,6 +15,15 @@ class Shape(Enum):
 	ellipse = 1
 	arrow = 2
 
+class Brush(Enum):
+	solid = 0
+	b_diagonal = 1 # 45 - degree upward left - to - right hatch
+	cross = 2 # Horizontal and vertical crosshatch
+	diag_cross = 3 # 45 - degree crosshatch
+	f_diagonal = 4 # 45 - degree downward left - to - right hatch
+	horizontal = 5 # Horizontal hatch
+	vertical = 6 # Vertical hatch
+
 
 class Overlay(Thread):
 	def __init__(self, **parameters):
@@ -64,17 +73,41 @@ class Overlay(Thread):
 
 					if r['geometry'] is Shape.rectangle:
 						win32gui.Rectangle(hdc, r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height'])
-
-						brush = win32gui.CreateHatchBrush(win32con.HS_DIAGCROSS, win32api.RGB(0, 0, 255))
-						win32gui.SelectObject(hdc, brush)
-
-						win32gui.ExtFloodFill(hdc, r['x'] + r['width'] / 2, r['y'] + r['height'] / 2,
-											  win32api.RGB(color_r, color_g, color_b), win32con.FLOODFILLBORDER)
 					elif r['geometry'] is Shape.ellipse:
 						win32gui.Ellipse(hdc, r['x'], r['y'], r['width'], r['height'])
 					else:
 						print('Unknown geometry of graphical element: ' + r)
 
+					if 'brush_color' in r:
+						brush_color_r = r['brush_color'][0]
+						brush_color_g = r['brush_color'][1]
+						brush_color_b = r['brush_color'][2]
+					else:
+						brush_color_r = 255
+						brush_color_g = 0
+						brush_color_b = 0
+
+					if 'brush' in r:
+						brush = r['brush']
+						brush_color = win32api.RGB(brush_color_r, brush_color_g, brush_color_b)
+						if brush is Brush.solid:
+							my_brush = win32gui.CreateSolidBrush(brush_color)
+						elif brush is Brush.b_diagonal:
+							my_brush = win32gui.CreateHatchBrush(win32con.HS_BDIAGONAL, brush_color)
+						elif brush is Brush.cross:
+							my_brush = win32gui.CreateHatchBrush(win32con.HS_CROSS, brush_color)
+						elif brush is Brush.diag_cross:
+							my_brush = win32gui.CreateHatchBrush(win32con.HS_DIAGCROSS, brush_color)
+						elif brush is Brush.f_diagonal:
+							my_brush = win32gui.CreateHatchBrush(win32con.HS_FDIAGONAL, brush_color)
+						elif brush is Brush.horizontal:
+							my_brush = win32gui.CreateHatchBrush(win32con.HS_HORIZONTAL, brush_color)
+						elif brush is Brush.vertical:
+							my_brush = win32gui.CreateHatchBrush(win32con.HS_VERTICAL, brush_color)
+						old_brush = win32gui.SelectObject(hdc, my_brush)
+						win32gui.ExtFloodFill(hdc, r['x'] + r['width'] / 2, r['y'] + r['height'] / 2,
+											  win32api.RGB(color_r, color_g, color_b), win32con.FLOODFILLBORDER)
+						win32gui.SelectObject(hdc, old_brush)
 				win32gui.EndPaint(h_wnd, paint_struct)
 				return 0
 
@@ -137,7 +170,7 @@ if __name__ == '__main__':
 	transparent_overlay.add(geometry=Shape.rectangle, x=300, y=300, width=100, height=100, thickness=10, color=(0, 255, 0))
 	transparent_overlay.refresh()
 
-	main_overlay.add(geometry=Shape.ellipse, x=10, y=10, width=40, height=40)
+	main_overlay.add(geometry=Shape.ellipse, x=10, y=10, width=40, height=40, brush=Brush.cross, brush_color=(0, 255, 255))
 	main_overlay.add(geometry=Shape.rectangle, x=100, y=100, width=100, height=100, color=(0, 0, 255))
-	main_overlay.add(geometry=Shape.rectangle, x=300, y=100, width=100, height=100, thickness=10, color=(0, 255, 0))
+	main_overlay.add(geometry=Shape.rectangle, x=300, y=100, width=100, height=100, thickness=10, color=(0, 255, 0), brush=Brush.solid, brush_color=(255,0,0))
 	main_overlay.refresh()

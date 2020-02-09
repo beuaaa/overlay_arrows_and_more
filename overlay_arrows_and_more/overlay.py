@@ -186,7 +186,7 @@ class Overlay(Thread):
 		self.graphical_elements.append(geometry)
 
 	def clear_all(self):
-		self.graphical_elements.clear()
+		del self.graphical_elements[:]
 
 
 if __name__ == '__main__':

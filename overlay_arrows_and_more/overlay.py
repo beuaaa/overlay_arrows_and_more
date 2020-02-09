@@ -74,7 +74,7 @@ class Overlay(Thread):
 					if r['geometry'] is Shape.rectangle:
 						win32gui.Rectangle(hdc, r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height'])
 					elif r['geometry'] is Shape.ellipse:
-						win32gui.Ellipse(hdc, r['x'], r['y'], r['width'], r['height'])
+						win32gui.Ellipse(hdc, r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height'])
 					elif r['geometry'] is Shape.text:
 						win32gui.DrawText(hdc, r['text'], )
 					else:
@@ -197,7 +197,9 @@ if __name__ == '__main__':
 	transparent_overlay.add(geometry=Shape.rectangle, x=300, y=300, width=100, height=100, thickness=10, color=(0, 255, 0))
 	transparent_overlay.refresh()
 
-	main_overlay.add(geometry=Shape.ellipse, x=10, y=10, width=40, height=40, brush=Brush.cross, brush_color=(0, 255, 255))
+	main_overlay.add(geometry=Shape.ellipse, x=10, y=10, width=18, height=18)
+	main_overlay.add(geometry=Shape.ellipse, x=40, y=10, width=18, height=18)
+	# main_overlay.add(geometry=Shape.ellipse, x=10, y=10, width=40, height=40, brush=Brush.cross, brush_color=(0, 255, 255))
 	main_overlay.add(geometry=Shape.rectangle, x=100, y=100, width=300, height=100, thickness=10, color=(0, 0, 255), text=u'Il était une fois...')
 	main_overlay.add(geometry=Shape.rectangle, x=500, y=100, width=300, height=100, thickness=10, color=(0, 255, 0), brush=Brush.solid, brush_color=(255,0,255), text=u'Il était deux fois...')
 	main_overlay.add(geometry=Shape.rectangle, x=100, y=500, width=300, height=100, thickness=10, color=(0, 0, 255), brush=Brush.solid, brush_color=(255,0,255), text=u'Il était trois fois...')

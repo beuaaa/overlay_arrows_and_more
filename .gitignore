@@ -2,4 +2,5 @@
 /.idea/
 /build/
 /dist/
+/overlay_arrows_and_more.egg-info/
 upload_pypi.bat

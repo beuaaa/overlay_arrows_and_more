@@ -69,14 +69,18 @@ class Overlay(Thread):
 						thickness = 5
 
 					pen = win32gui.CreatePen(win32con.PS_GEOMETRIC, thickness, win32api.RGB(color_r, color_g, color_b))
-					win32gui.SelectObject(hdc, pen)
+					old_pen = win32gui.SelectObject(hdc, pen)
 
 					if r['geometry'] is Shape.rectangle:
 						win32gui.Rectangle(hdc, r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height'])
 					elif r['geometry'] is Shape.ellipse:
 						win32gui.Ellipse(hdc, r['x'], r['y'], r['width'], r['height'])
+					elif r['geometry'] is Shape.text:
+						win32gui.DrawText(hdc, r['text'], )
 					else:
 						print('Unknown geometry of graphical element: ' + r)
+
+					win32gui.SelectObject(hdc, old_pen)
 
 					if 'brush_color' in r:
 						brush_color_r = r['brush_color'][0]
@@ -108,6 +112,29 @@ class Overlay(Thread):
 						win32gui.ExtFloodFill(hdc, r['x'] + r['width'] / 2, r['y'] + r['height'] / 2,
 											  win32api.RGB(color_r, color_g, color_b), win32con.FLOODFILLBORDER)
 						win32gui.SelectObject(hdc, old_brush)
+
+					if 'text' in r:
+						text = r['text']
+						rect = win32gui.GetClientRect(h_wnd)
+						fontSize = 18
+						lf = win32gui.LOGFONT()
+						lf.lfFaceName = "Arial Unicode MS"
+						lf.lfHeight = fontSize
+						lf.lfWeight = 600
+
+						lf.lfQuality = win32con.ANTIALIASED_QUALITY
+						hf = win32gui.CreateFontIndirect(lf)
+						old_font = win32gui.SelectObject(hdc, hf)
+
+						win32gui.SetTextColor(hdc, win32api.RGB(0, 0, 0))
+						win32gui.SetBkColor(hdc, win32api.RGB(255, 0, 0))
+						text_format = win32con.DT_CENTER | win32con.DT_SINGLELINE | win32con.DT_VCENTER
+						tuple_r = tuple([r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height']])
+						win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format | win32con.DT_CALCRECT)
+						win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format)
+
+						win32gui.SelectObject(hdc, old_font)
+
 				win32gui.EndPaint(h_wnd, paint_struct)
 				return 0
 
@@ -134,7 +161,7 @@ class Overlay(Thread):
 
 		self.h_window = win32gui.CreateWindowEx(
 			ex_style, wnd_class_atom,
-			'OverlayWindow',  # qqqq
+			'OverlayWindow',
 			style,
 			0,  # x
 			0,  # y
@@ -171,6 +198,8 @@ if __name__ == '__main__':
 	transparent_overlay.refresh()
 
 	main_overlay.add(geometry=Shape.ellipse, x=10, y=10, width=40, height=40, brush=Brush.cross, brush_color=(0, 255, 255))
-	main_overlay.add(geometry=Shape.rectangle, x=100, y=100, width=100, height=100, color=(0, 0, 255))
-	main_overlay.add(geometry=Shape.rectangle, x=300, y=100, width=100, height=100, thickness=10, color=(0, 255, 0), brush=Brush.solid, brush_color=(255,0,0))
+	main_overlay.add(geometry=Shape.rectangle, x=100, y=100, width=300, height=100, thickness=10, color=(0, 0, 255), text=u'Il était une fois...')
+	main_overlay.add(geometry=Shape.rectangle, x=500, y=100, width=300, height=100, thickness=10, color=(0, 255, 0), brush=Brush.solid, brush_color=(255,0,255), text=u'Il était deux fois...')
+	main_overlay.add(geometry=Shape.rectangle, x=100, y=500, width=300, height=100, thickness=10, color=(0, 0, 255), brush=Brush.solid, brush_color=(255,0,255), text=u'Il était trois fois...')
+
 	main_overlay.refresh()

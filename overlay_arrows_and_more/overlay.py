@@ -5,6 +5,7 @@ import win32con
 import win32gui
 import win32ui
 from threading import Thread
+from threading import Lock
 from enum import Enum
 from datetime import datetime
 from uuid import uuid4
@@ -28,6 +29,7 @@ class Brush(Enum):
 class Overlay(Thread):
 	def __init__(self, **parameters):
 		Thread.__init__(self)
+		self.lock = Lock()
 		self.h_window = None
 		self.graphical_elements = []
 		self.class_name = datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
@@ -48,10 +50,12 @@ class Overlay(Thread):
 			:returns: nothing
 			"""
 			global graphical_elements
+
 			if message == win32con.WM_PAINT:
 				hdc, paint_struct = win32gui.BeginPaint(h_wnd)
 				win32gui.BringWindowToTop(h_wnd)
 
+				self.lock.acquire()
 				for r in self.graphical_elements:
 
 					if 'color' in r:
@@ -134,7 +138,7 @@ class Overlay(Thread):
 						win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format)
 
 						win32gui.SelectObject(hdc, old_font)
-
+				self.lock.release()
 				win32gui.EndPaint(h_wnd, paint_struct)
 				return 0
 
@@ -183,10 +187,14 @@ class Overlay(Thread):
 		win32gui.InvalidateRect(self.h_window, None, True)
 
 	def add(self, **geometry):
+		self.lock.acquire()
 		self.graphical_elements.append(geometry)
+		self.lock.release()
 
 	def clear_all(self):
+		self.lock.acquire()
 		del self.graphical_elements[:]
+		self.lock.release()
 
 
 if __name__ == '__main__':

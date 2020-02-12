@@ -30,6 +30,7 @@ class Overlay(Thread):
 	def __init__(self, **parameters):
 		Thread.__init__(self)
 		self.lock = Lock()
+		self.lock2 = Lock()
 		self.h_window = None
 		self.graphical_elements = []
 		self.class_name = datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
@@ -184,17 +185,23 @@ class Overlay(Thread):
 		win32gui.PumpMessages()
 
 	def refresh(self):
+		self.lock2.acquire()
 		win32gui.InvalidateRect(self.h_window, None, True)
+		self.lock2.release()
 
 	def add(self, **geometry):
+		self.lock2.acquire()
 		self.lock.acquire()
 		self.graphical_elements.append(geometry)
 		self.lock.release()
+		self.lock2.release()
 
 	def clear_all(self):
+		self.lock2.acquire()
 		self.lock.acquire()
 		del self.graphical_elements[:]
 		self.lock.release()
+		self.lock2.release()
 
 
 if __name__ == '__main__':

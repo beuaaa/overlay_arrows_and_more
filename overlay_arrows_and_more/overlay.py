@@ -59,6 +59,23 @@ class Overlay(Thread):
 				self.lock.acquire()
 				for r in self.graphical_elements:
 
+					if 'x' in r:
+						x = r['x']
+					else:
+						x = 0
+					if 'y' in r:
+						y = r['y']
+					else:
+						y = 0
+					if 'width' in r:
+						width = r['width']
+					else:
+						width = 100
+					if 'height' in r:
+						height = r['height']
+					else:
+						height = 100
+
 					if 'color' in r:
 						color_r = r['color'][0]
 						color_g = r['color'][1]
@@ -80,6 +97,10 @@ class Overlay(Thread):
 						win32gui.Rectangle(hdc, r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height'])
 					elif r['geometry'] is Shape.ellipse:
 						win32gui.Ellipse(hdc, r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height'])
+					elif r['geometry'] is Shape.arrow:
+						a = thickness
+						t = ( (x-int(a*1.4), y), (x-a*4, y+a*3), (x,y), (x-a*4, y-a*3), (x-int(a*1.4),y), (x-a*9,y) )
+						win32gui.Polyline(hdc,t)
 					elif r['geometry'] is Shape.text:
 						win32gui.DrawText(hdc, r['text'], )
 					else:
@@ -96,7 +117,7 @@ class Overlay(Thread):
 						brush_color_g = 0
 						brush_color_b = 0
 
-					if 'brush' in r:
+					if 'brush' in r and r['width']>1 and r['height']>1:
 						brush = r['brush']
 						brush_color = win32api.RGB(brush_color_r, brush_color_g, brush_color_b)
 						if brush is Brush.solid:
@@ -217,6 +238,11 @@ if __name__ == '__main__':
 	# main_overlay.add(geometry=Shape.ellipse, x=10, y=10, width=40, height=40, brush=Brush.cross, brush_color=(0, 255, 255))
 	main_overlay.add(geometry=Shape.rectangle, x=100, y=100, width=300, height=100, thickness=10, color=(0, 0, 255), text=u'Il était une fois...')
 	main_overlay.add(geometry=Shape.rectangle, x=500, y=100, width=300, height=100, thickness=10, color=(0, 255, 0), brush=Brush.solid, brush_color=(255,0,255), text=u'Il était deux fois...')
-	main_overlay.add(geometry=Shape.rectangle, x=100, y=500, width=300, height=100, thickness=10, color=(0, 0, 255), brush=Brush.solid, brush_color=(255,0,255), text=u'Il était trois fois...')
+	main_overlay.add(geometry=Shape.rectangle, x=100, y=500, width=300, height=100, thickness=10, color=(0, 0, 255), brush = Brush.solid, brush_color = (255, 0, 255), text = u'Il était trois fois...')
+
+	main_overlay.add(geometry=Shape.rectangle, x=201, y=423, width=6, height=1, thickness=1, color=(255, 0, 0),
+					 brush = Brush.solid, brush_color = (255, 0, 255) )
+
+	main_overlay.add(geometry=Shape.arrow, x=800, y=500, width=300, height=100, thickness=8, color=(0, 0, 255))
 
 	main_overlay.refresh()

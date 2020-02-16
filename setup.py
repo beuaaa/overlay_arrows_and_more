@@ -1,8 +1,10 @@
 from setuptools import setup
 
+import overlay_arrows_and_more
+
 setup(
     name='overlay_arrows_and_more',
-    version='0.1.8',
+    version= overlay_arrows_and_more.__version__,
     packages=['overlay_arrows_and_more'],
     url='https://github.com/beuaaa/overlay_arrows_and_more',
     license='MIT',

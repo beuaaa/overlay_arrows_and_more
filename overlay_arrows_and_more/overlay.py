@@ -135,8 +135,11 @@ class Overlay(Thread):
 						elif brush is Brush.vertical:
 							my_brush = win32gui.CreateHatchBrush(win32con.HS_VERTICAL, brush_color)
 						old_brush = win32gui.SelectObject(hdc, my_brush)
-						win32gui.ExtFloodFill(hdc, r['x'] + r['width'] / 2, r['y'] + r['height'] / 2,
+						try:
+							win32gui.ExtFloodFill(hdc, r['x'] + r['width'] / 2, r['y'] + r['height'] / 2,
 											  win32api.RGB(color_r, color_g, color_b), win32con.FLOODFILLBORDER)
+						except Exception:
+							pass
 						win32gui.SelectObject(hdc, old_brush)
 
 					if 'text' in r:

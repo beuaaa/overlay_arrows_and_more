@@ -88,25 +88,26 @@ class Overlay(Thread):
 					if 'thickness' in r:
 						thickness = r['thickness']
 					else:
-						thickness = 5
+						thickness = 0
 
-					pen = win32gui.CreatePen(win32con.PS_GEOMETRIC, thickness, win32api.RGB(color_r, color_g, color_b))
-					old_pen = win32gui.SelectObject(hdc, pen)
+					if thickness > 0:
+						pen = win32gui.CreatePen(win32con.PS_GEOMETRIC, thickness, win32api.RGB(color_r, color_g, color_b))
+						old_pen = win32gui.SelectObject(hdc, pen)
 
-					if r['geometry'] is Shape.rectangle:
-						win32gui.Rectangle(hdc, r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height'])
-					elif r['geometry'] is Shape.ellipse:
-						win32gui.Ellipse(hdc, r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height'])
-					elif r['geometry'] is Shape.arrow:
-						a = thickness
-						t = ( (x-int(a*1.4), y), (x-a*4, y+a*3), (x,y), (x-a*4, y-a*3), (x-int(a*1.4),y), (x-a*9,y) )
-						win32gui.Polyline(hdc,t)
-					elif r['geometry'] is Shape.text:
-						win32gui.DrawText(hdc, r['text'], )
-					else:
-						print('Unknown geometry of graphical element: ' + r)
+						if r['geometry'] is Shape.rectangle:
+							win32gui.Rectangle(hdc, r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height'])
+						elif r['geometry'] is Shape.ellipse:
+							win32gui.Ellipse(hdc, r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height'])
+						elif r['geometry'] is Shape.arrow:
+							a = thickness
+							t = ( (x-int(a*1.4), y), (x-a*4, y+a*3), (x,y), (x-a*4, y-a*3), (x-int(a*1.4),y), (x-a*9,y) )
+							win32gui.Polyline(hdc,t)
+						elif r['geometry'] is Shape.text:
+							win32gui.DrawText(hdc, r['text'], )
+						else:
+							print('Unknown geometry of graphical element: ' + r)
 
-					win32gui.SelectObject(hdc, old_pen)
+						win32gui.SelectObject(hdc, old_pen)
 
 					if 'brush_color' in r:
 						brush_color_r = r['brush_color'][0]
@@ -114,8 +115,8 @@ class Overlay(Thread):
 						brush_color_b = r['brush_color'][2]
 					else:
 						brush_color_r = 255
-						brush_color_g = 0
-						brush_color_b = 0
+						brush_color_g = 255
+						brush_color_b = 255
 
 					if 'brush' in r and r['width']>1 and r['height']>1:
 						brush = r['brush']
@@ -155,10 +156,27 @@ class Overlay(Thread):
 						hf = win32gui.CreateFontIndirect(lf)
 						old_font = win32gui.SelectObject(hdc, hf)
 
-						win32gui.SetTextColor(hdc, win32api.RGB(0, 0, 0))
-						win32gui.SetBkColor(hdc, win32api.RGB(255, 0, 0))
+						if 'text_color' in r:
+							text_color_r = r['text_color'][0]
+							text_color_g = r['text_color'][1]
+							text_color_b = r['text_color'][2]
+						else:
+							text_color_r = 0
+							text_color_g = 0
+							text_color_b = 0
+						win32gui.SetTextColor(hdc, win32api.RGB(text_color_r, text_color_g, text_color_b))
+
+						if 'text_bg_color' in r:
+							text_bg_color_r = r['text_bg_color'][0]
+							text_bg_color_g = r['text_bg_color'][1]
+							text_bg_color_b = r['text_bg_color'][2]
+						else:
+							text_bg_color_r = brush_color_r
+							text_bg_color_g = brush_color_g
+							text_bg_color_b = brush_color_b
+						win32gui.SetBkColor(hdc, win32api.RGB(text_bg_color_r, text_bg_color_g, text_bg_color_b))
 						text_format = win32con.DT_CENTER | win32con.DT_SINGLELINE | win32con.DT_VCENTER
-						tuple_r = tuple([r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height']])
+						tuple_r = tuple([x, y, x + width, y + height])
 						win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format | win32con.DT_CALCRECT)
 						win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format)
 
@@ -236,10 +254,12 @@ if __name__ == '__main__':
 	transparent_overlay.add(geometry=Shape.rectangle, x=300, y=300, width=100, height=100, thickness=10, color=(0, 255, 0))
 	transparent_overlay.refresh()
 
+	main_overlay.add(x=60, y=10, width=98, height=20, text_bg_color=(255, 255, 254), text_color=(255, 0, 0), text='Recording...')
+
 	main_overlay.add(geometry=Shape.ellipse, x=10, y=10, width=18, height=18)
 	main_overlay.add(geometry=Shape.ellipse, x=40, y=10, width=18, height=18)
 	# main_overlay.add(geometry=Shape.ellipse, x=10, y=10, width=40, height=40, brush=Brush.cross, brush_color=(0, 255, 255))
-	main_overlay.add(geometry=Shape.rectangle, x=100, y=100, width=300, height=100, thickness=10, color=(0, 0, 255), text=u'Il était une fois...')
+	main_overlay.add(geometry=Shape.rectangle, x=100, y=100, width=300, height=100, thickness=10, color=(0, 0, 255), text_color=(255,255,254), text=u'Il était une fois...')
 	main_overlay.add(geometry=Shape.rectangle, x=500, y=100, width=300, height=100, thickness=10, color=(0, 255, 0), brush=Brush.solid, brush_color=(255,0,255), text=u'Il était deux fois...')
 	main_overlay.add(geometry=Shape.rectangle, x=100, y=500, width=300, height=100, thickness=10, color=(0, 0, 255), brush = Brush.solid, brush_color = (255, 0, 255), text = u'Il était trois fois...')
 

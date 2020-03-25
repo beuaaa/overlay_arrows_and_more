@@ -3,7 +3,6 @@
 import win32api
 import win32con
 import win32gui
-import win32ui
 from threading import Thread
 from threading import Lock
 from enum import Enum
@@ -16,14 +15,15 @@ class Shape(Enum):
 	ellipse = 1
 	arrow = 2
 
+
 class Brush(Enum):
 	solid = 0
-	b_diagonal = 1 # 45 - degree upward left - to - right hatch
-	cross = 2 # Horizontal and vertical crosshatch
-	diag_cross = 3 # 45 - degree crosshatch
-	f_diagonal = 4 # 45 - degree downward left - to - right hatch
-	horizontal = 5 # Horizontal hatch
-	vertical = 6 # Vertical hatch
+	b_diagonal = 1  # 45 - degree upward left - to - right hatch
+	cross = 2  # Horizontal and vertical crosshatch
+	diag_cross = 3  # 45 - degree crosshatch
+	f_diagonal = 4  # 45 - degree downward left - to - right hatch
+	horizontal = 5  # Horizontal hatch
+	vertical = 6  # Vertical hatch
 
 
 class Overlay(Thread):
@@ -35,23 +35,19 @@ class Overlay(Thread):
 		self.graphical_elements = []
 		self.class_name = datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
 		if 'transparency' in parameters:
-			self.transparency = parameters['transparency']
+			self.transparency = int(255.0*parameters['transparency'])
 		else:
 			self.transparency = 255
+		self.daemon = True
 		self.start()
 
 	def run(self):
 		def wnd_proc(h_wnd, message, w_param, l_param):
 			"""Displays a transparent window with some graphic elements
-
 			Displays a transparent window with some graphic elements
-
 			:param h_wnd: an input argument
-
 			:returns: nothing
 			"""
-			global graphical_elements
-
 			if message == win32con.WM_PAINT:
 				hdc, paint_struct = win32gui.BeginPaint(h_wnd)
 				win32gui.BringWindowToTop(h_wnd)
@@ -91,7 +87,8 @@ class Overlay(Thread):
 						thickness = 0
 
 					if thickness > 0:
-						pen = win32gui.CreatePen(win32con.PS_GEOMETRIC, thickness, win32api.RGB(color_r, color_g, color_b))
+						pen = win32gui.CreatePen(win32con.PS_GEOMETRIC, thickness,
+												 win32api.RGB(color_r, color_g, color_b))
 						old_pen = win32gui.SelectObject(hdc, pen)
 
 						if r['geometry'] is Shape.rectangle:
@@ -100,8 +97,9 @@ class Overlay(Thread):
 							win32gui.Ellipse(hdc, r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height'])
 						elif r['geometry'] is Shape.arrow:
 							a = thickness
-							t = ( (x-int(a*1.4), y), (x-a*4, y+a*3), (x,y), (x-a*4, y-a*3), (x-int(a*1.4),y), (x-a*9,y) )
-							win32gui.Polyline(hdc,t)
+							t = ((x - int(a * 1.4), y), (x - a * 4, y + a * 3), (x, y), (x - a * 4, y - a * 3),
+								 (x - int(a * 1.4), y), (x - a * 9, y))
+							win32gui.Polyline(hdc, t)
 						elif r['geometry'] is Shape.text:
 							win32gui.DrawText(hdc, r['text'], )
 						else:
@@ -118,7 +116,7 @@ class Overlay(Thread):
 						brush_color_g = 255
 						brush_color_b = 255
 
-					if 'brush' in r and r['width']>1 and r['height']>1:
+					if 'brush' in r and r['width'] > 1 and r['height'] > 1:
 						brush = r['brush']
 						brush_color = win32api.RGB(brush_color_r, brush_color_g, brush_color_b)
 						if brush is Brush.solid:
@@ -138,18 +136,17 @@ class Overlay(Thread):
 						old_brush = win32gui.SelectObject(hdc, my_brush)
 						try:
 							win32gui.ExtFloodFill(hdc, r['x'] + r['width'] / 2, r['y'] + r['height'] / 2,
-											  win32api.RGB(color_r, color_g, color_b), win32con.FLOODFILLBORDER)
+												  win32api.RGB(color_r, color_g, color_b), win32con.FLOODFILLBORDER)
 						except Exception:
 							pass
 						win32gui.SelectObject(hdc, old_brush)
 
 					if 'text' in r:
 						text = r['text']
-						rect = win32gui.GetClientRect(h_wnd)
-						fontSize = 18
+						font_size = 18
 						lf = win32gui.LOGFONT()
 						lf.lfFaceName = "Arial Unicode MS"
-						lf.lfHeight = fontSize
+						lf.lfHeight = font_size
 						lf.lfWeight = 600
 
 						lf.lfQuality = win32con.ANTIALIASED_QUALITY
@@ -184,11 +181,6 @@ class Overlay(Thread):
 				self.lock.release()
 				win32gui.EndPaint(h_wnd, paint_struct)
 				return 0
-
-			# elif message == win32con.WM_DESTROY:
-			#	print 'Closing the window.'
-			#	win32gui.PostQuitMessage(0)
-			#	return 0
 			else:
 				return win32gui.DefWindowProc(h_wnd, message, w_param, l_param)
 
@@ -220,7 +212,8 @@ class Overlay(Thread):
 			None  # lpParam
 		)
 
-		win32gui.SetLayeredWindowAttributes(self.h_window, 0x00ffffff, self.transparency, win32con.LWA_COLORKEY | win32con.LWA_ALPHA)
+		win32gui.SetLayeredWindowAttributes(self.h_window, 0x00ffffff, self.transparency,
+											win32con.LWA_COLORKEY | win32con.LWA_ALPHA)
 		win32gui.SetWindowPos(self.h_window, win32con.HWND_TOPMOST, 0, 0, 0, 0,
 							  win32con.SWP_NOACTIVATE | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_SHOWWINDOW)
 
@@ -247,25 +240,32 @@ class Overlay(Thread):
 
 
 if __name__ == '__main__':
+	import time
 
 	main_overlay = Overlay()
-	transparent_overlay = Overlay(transparency=128)
+	transparent_overlay = Overlay(transparency=0.5)
 
-	transparent_overlay.add(geometry=Shape.rectangle, x=300, y=300, width=100, height=100, thickness=10, color=(0, 255, 0))
+	transparent_overlay.add(geometry=Shape.rectangle, x=300, y=300, width=100, height=100, thickness=10,
+							color=(0, 255, 0))
 	transparent_overlay.refresh()
 
-	main_overlay.add(x=60, y=10, width=98, height=20, text_bg_color=(255, 255, 254), text_color=(255, 0, 0), text='Recording...')
+	main_overlay.add(x=60, y=10, width=98, height=20, text_bg_color=(255, 255, 254), text_color=(255, 0, 0),
+					 text='Recording...')
 
 	main_overlay.add(geometry=Shape.ellipse, x=10, y=10, width=18, height=18)
 	main_overlay.add(geometry=Shape.ellipse, x=40, y=10, width=18, height=18)
-	# main_overlay.add(geometry=Shape.ellipse, x=10, y=10, width=40, height=40, brush=Brush.cross, brush_color=(0, 255, 255))
-	main_overlay.add(geometry=Shape.rectangle, x=100, y=100, width=300, height=100, thickness=10, color=(0, 0, 255), text_color=(255,255,254), text=u'Il était une fois...')
-	main_overlay.add(geometry=Shape.rectangle, x=500, y=100, width=300, height=100, thickness=10, color=(0, 255, 0), brush=Brush.solid, brush_color=(255,0,255), text=u'Il était deux fois...')
-	main_overlay.add(geometry=Shape.rectangle, x=100, y=500, width=300, height=100, thickness=10, color=(0, 0, 255), brush = Brush.solid, brush_color = (255, 0, 255), text = u'Il était trois fois...')
+
+	main_overlay.add(geometry=Shape.rectangle, x=100, y=100, width=300, height=100, thickness=10, color=(0, 0, 255),
+					 text_color=(255, 255, 254), text=u'Il était une fois...')
+	main_overlay.add(geometry=Shape.rectangle, x=500, y=100, width=300, height=100, thickness=10, color=(0, 255, 0),
+					 brush=Brush.solid, brush_color=(255, 0, 255), text=u'Il était deux fois...')
+	main_overlay.add(geometry=Shape.rectangle, x=100, y=500, width=300, height=100, thickness=10, color=(0, 0, 255),
+					 brush=Brush.solid, brush_color=(255, 0, 255), text=u'Il était trois fois...')
 
 	main_overlay.add(geometry=Shape.rectangle, x=201, y=423, width=6, height=1, thickness=1, color=(255, 0, 0),
-					 brush = Brush.solid, brush_color = (255, 0, 255) )
+					 brush=Brush.solid, brush_color=(255, 0, 255))
 
 	main_overlay.add(geometry=Shape.arrow, x=800, y=500, width=300, height=100, thickness=8, color=(0, 0, 255))
 
 	main_overlay.refresh()
+	time.sleep(5.0)

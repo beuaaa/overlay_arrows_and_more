@@ -14,6 +14,7 @@ class Shape(Enum):
 	rectangle = 0
 	ellipse = 1
 	arrow = 2
+	polyline = 3
 
 
 class Brush(Enum):
@@ -71,7 +72,10 @@ class Overlay(Thread):
 						height = r['height']
 					else:
 						height = 100
-
+					if 'xy_array' in r:
+						xy_array = r['xy_array']
+					else:
+						xy_array = ((15, 15), (15, 45), (45, 30))
 					if 'color' in r:
 						color_r = r['color'][0]
 						color_g = r['color'][1]
@@ -95,6 +99,15 @@ class Overlay(Thread):
 							win32gui.Rectangle(hdc, r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height'])
 						elif r['geometry'] is Shape.ellipse:
 							win32gui.Ellipse(hdc, r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height'])
+						elif r['geometry'] is Shape.polyline:
+							x = min(xy_array, key=lambda item: item[0])[0]
+							y = min(xy_array, key=lambda item: item[1])[1]
+							x_max = max(xy_array, key=lambda item: item[0])[0]
+							y_max = max(xy_array, key=lambda item: item[1])[1]
+							width = x_max - x
+							height = y_max - y
+							new_xy_array = xy_array + (xy_array[0],)
+							win32gui.Polyline(hdc, new_xy_array)
 						elif r['geometry'] is Shape.arrow:
 							a = thickness
 							t = ((x - int(a * 1.4), y), (x - a * 4, y + a * 3), (x, y), (x - a * 4, y - a * 3),
@@ -116,7 +129,7 @@ class Overlay(Thread):
 						brush_color_g = 255
 						brush_color_b = 255
 
-					if 'brush' in r and r['width'] > 1 and r['height'] > 1:
+					if 'brush' in r and width > 1 and height > 1:
 						brush = r['brush']
 						brush_color = win32api.RGB(brush_color_r, brush_color_g, brush_color_b)
 						if brush is Brush.solid:
@@ -135,7 +148,7 @@ class Overlay(Thread):
 							my_brush = win32gui.CreateHatchBrush(win32con.HS_VERTICAL, brush_color)
 						old_brush = win32gui.SelectObject(hdc, my_brush)
 						try:
-							win32gui.ExtFloodFill(hdc, r['x'] + r['width'] / 2, r['y'] + r['height'] / 2,
+							win32gui.ExtFloodFill(hdc, x + width / 2, y + height / 2,
 												  win32api.RGB(color_r, color_g, color_b), win32con.FLOODFILLBORDER)
 						except Exception:
 							pass
@@ -267,5 +280,13 @@ if __name__ == '__main__':
 
 	main_overlay.add(geometry=Shape.arrow, x=800, y=500, width=300, height=100, thickness=8, color=(0, 0, 255))
 
+	main_overlay.add(
+		geometry=Shape.rectangle, x=10, y=10, width=40, height=40,
+		color=(0, 0, 0), thickness=1, brush=Brush.solid, brush_color=(255, 255, 254))
+
+	main_overlay.add(
+		geometry=Shape.polyline, xy_array=((15, 15), (15, 45), (45, 30)),
+		color=(0, 0, 0), thickness=1, brush=Brush.solid, brush_color=(0, 255, 0))
+
 	main_overlay.refresh()
-	time.sleep(5.0)
+	time.sleep(99.0)

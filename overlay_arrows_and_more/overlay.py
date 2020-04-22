@@ -120,6 +120,7 @@ class Overlay(Thread):
 						color_g = brush_color_g
 						color_b = brush_color_b
 
+					my_brush = None
 					if 'brush' in r and width > 1 and height > 1:
 						brush = r['brush']
 						brush_color = win32api.RGB(brush_color_r, brush_color_g, brush_color_b)
@@ -307,7 +308,7 @@ if __name__ == '__main__':
 					 xyrgb_array=((15, 15, 255, 0, 0), (15, 45, 0, 255, 0), (45, 30, 0, 0, 255)))
 
 	main_overlay.add(geometry=Shape.ellipse, x=10, y=800, width=40, height=40,
-					 color=(255, 0, 0), thickness=2, brush=Brush.solid, brush_color=(255, 255, 254))
+					 color=(255, 0, 0), thickness=4, brush=Brush.solid, brush_color=(0, 255, 0))
 
 
 

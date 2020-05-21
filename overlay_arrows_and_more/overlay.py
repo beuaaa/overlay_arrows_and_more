@@ -98,7 +98,7 @@ class Overlay(Thread):
 					if 'geometry' in r and r['geometry'] is Shape.triangle:
 						vertices = ()
 						for xyrgb in xyrgb_array:
-							vertices = vertices + ({'x': xyrgb[0], 'y': xyrgb[1],
+							vertices = vertices + ({'x': int(round(xyrgb[0])) , 'y': int(round(xyrgb[1])),
 													'Red': xyrgb[2] * 256,
 													'Green': xyrgb[3] * 256,
 													'Blue': xyrgb[4] * 256,
@@ -144,9 +144,10 @@ class Overlay(Thread):
 					old_pen = win32gui.SelectObject(hdc, pen)
 					if 'geometry' in r:
 						if r['geometry'] is Shape.rectangle:
-							win32gui.Rectangle(hdc, x, y, x + width, y + height)
+							win32gui.Rectangle(
+								hdc, int(round(x)), int(round(y)), int(round(x + width)), int(round(y + height)))
 						elif r['geometry'] is Shape.ellipse:
-							win32gui.Ellipse(hdc, x, y, x + width, y + height)
+							win32gui.Ellipse(hdc, int(round(x)), int(round(y)), int(round(x + width)), int(round(y + height)))
 						elif r['geometry'] is Shape.arrow:
 							a = thickness
 							t = ((x - int(a * 1.4), y), (x - a * 4, y + a * 3), (x, y), (x - a * 4, y - a * 3),
@@ -155,8 +156,8 @@ class Overlay(Thread):
 						elif r['geometry'] is Shape.triangle:
 							t = ()
 							for xyrgb in xyrgb_array:
-								t = t + ((xyrgb[0], xyrgb[1]),)
-							t = t + ((xyrgb_array[0][0], xyrgb_array[0][1]),)
+								t = t + ((int(round(xyrgb[0])), int(round(xyrgb[1]))),)
+							t = t + ((int(round(xyrgb_array[0][0])), int(round(xyrgb_array[0][1]))),)
 							win32gui.Polyline(hdc, t)
 						win32gui.SelectObject(hdc, old_pen)
 
@@ -195,7 +196,7 @@ class Overlay(Thread):
 							text_bg_color_b = brush_color_b
 						win32gui.SetBkColor(hdc, win32api.RGB(text_bg_color_r, text_bg_color_g, text_bg_color_b))
 						text_format = win32con.DT_CENTER | win32con.DT_SINGLELINE | win32con.DT_VCENTER
-						tuple_r = tuple([x, y, x + width, y + height])
+						tuple_r = tuple([int(round(x)), int(round(y)), int(round(x + width)), int(round(y + height))])
 						win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format | win32con.DT_CALCRECT)
 						win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format)
 
@@ -308,7 +309,7 @@ if __name__ == '__main__':
 					 xyrgb_array=((15, 15, 255, 0, 0), (15, 45, 0, 255, 0), (45, 30, 0, 0, 255)))
 
 	main_overlay.add(geometry=Shape.ellipse, x=10, y=800, width=40, height=40,
-					 color=(255, 0, 0), thickness=4, brush=Brush.solid, brush_color=(0, 255, 0))
+					 color=(255, 0, 0), thickness=2, brush=Brush.solid, brush_color=(255, 255, 254))
 
 
 

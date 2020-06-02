@@ -3,6 +3,7 @@
 import win32api
 import win32con
 import win32gui
+from threading import Timer
 from threading import Thread
 from threading import Lock
 from enum import Enum
@@ -39,6 +40,13 @@ class Overlay(Thread):
 			self.transparency = int(255.0*(1.0 - parameters['transparency']))
 		else:
 			self.transparency = 255
+		self.period = 0
+		if 'frequency' in parameters:
+			frequency = float(parameters['frequency'])
+			if frequency > 0:
+				self.period = 1.0/frequency
+		else:
+			self.period = 0
 		self.daemon = True
 		self.start()
 
@@ -120,6 +128,16 @@ class Overlay(Thread):
 						color_g = brush_color_g
 						color_b = brush_color_b
 
+					if 'font_size' in r:
+						font_size = r['font_size']
+					else:
+						font_size = 18
+
+					if 'font_name' in r:
+						font_name = r['font_name']
+					else:
+						font_name = "Arial"
+
 					my_brush = None
 					if 'brush' in r and width > 1 and height > 1:
 						brush = r['brush']
@@ -166,12 +184,10 @@ class Overlay(Thread):
 
 					if 'text' in r:
 						text = r['text']
-						font_size = 18
 						lf = win32gui.LOGFONT()
-						lf.lfFaceName = "Arial Unicode MS"
+						lf.lfFaceName = font_name
 						lf.lfHeight = font_size
-						lf.lfWeight = 600
-
+						lf.lfWeight = win32con.FW_NORMAL
 						lf.lfQuality = win32con.ANTIALIASED_QUALITY
 						hf = win32gui.CreateFontIndirect(lf)
 						old_font = win32gui.SelectObject(hdc, hf)
@@ -194,6 +210,7 @@ class Overlay(Thread):
 							text_bg_color_r = brush_color_r
 							text_bg_color_g = brush_color_g
 							text_bg_color_b = brush_color_b
+						win32gui.SetBkMode(hdc, win32con.TRANSPARENT)
 						win32gui.SetBkColor(hdc, win32api.RGB(text_bg_color_r, text_bg_color_g, text_bg_color_b))
 						text_format = win32con.DT_CENTER | win32con.DT_SINGLELINE | win32con.DT_VCENTER
 						tuple_r = tuple([int(round(x)), int(round(y)), int(round(x + width)), int(round(y + height))])
@@ -240,12 +257,18 @@ class Overlay(Thread):
 		win32gui.SetWindowPos(self.h_window, win32con.HWND_TOPMOST, 0, 0, 0, 0,
 							  win32con.SWP_NOACTIVATE | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_SHOWWINDOW)
 
+		if self.period > 0:
+			self.auto_refresh()
 		win32gui.PumpMessages()
 
 	def refresh(self):
 		self.lock2.acquire()
 		win32gui.InvalidateRect(self.h_window, None, True)
 		self.lock2.release()
+
+	def auto_refresh(self):
+		self.refresh()
+		Timer(self.period, self.auto_refresh).start()
 
 	def add(self, **geometry):
 		self.lock2.acquire()
@@ -260,6 +283,31 @@ class Overlay(Thread):
 		del self.graphical_elements[:]
 		self.lock.release()
 		self.lock2.release()
+
+
+def overlay_add_pywinauto_recorder_icon(overlay, x, y):
+	overlay.add(geometry=Shape.rectangle, x=x, y=y, width=200, height=100, thickness=5, color=(200, 66, 66),
+					 brush=Brush.solid, brush_color=(255, 254, 255))
+	overlay.add(geometry=Shape.rectangle, x=x+5, y=y+15, width=190, height=38, thickness=0,
+					 brush=Brush.solid, brush_color=(255, 254, 255), text_color=(66, 66, 66),
+					 text=u'PYWINAUTO', font_size=36, font_name='Times New Roman')
+	overlay.add(geometry=Shape.rectangle, x=x+20, y=y+50, width=160, height=38, thickness=0,
+					brush=Brush.solid, brush_color=(255, 254, 255), text_color=(200, 40, 40),
+					 text=u'recorder', font_size=50, font_name='Times New Roman')
+
+
+def overlay_add_pywinauto_recorder_icon2(overlay, x, y):
+	overlay.add(
+		geometry=Shape.rectangle, x=x, y=y, width=200, height=100, thickness=5, color=(200, 66, 66),
+		brush=Brush.solid, brush_color=(255, 254, 255))
+	overlay.add(
+		geometry=Shape.rectangle, x=x+5, y=y+15, width=190, height=38, thickness=0,
+		brush=Brush.solid, brush_color=(255, 254, 255), text_color=(66, 66, 66),
+		text=u'PYWINAUTO', font_size=44, font_name='Impact')
+	overlay.add(
+		geometry=Shape.rectangle, x=x+20, y=y+50, width=160, height=38, thickness=0,
+		brush=Brush.solid, brush_color=(255, 254, 255), text_color=(200, 40, 40),
+		text=u'recorder', font_size=48, font_name='Arial Black')
 
 
 if __name__ == '__main__':
@@ -287,15 +335,13 @@ if __name__ == '__main__':
 					 xyrgb_array=((815, 150, 255, 0, 0), (1400, 150, 0, 255, 0), (1400, 800, 0, 0, 255)),
 					 )
 
-	main_overlay.add(geometry=Shape.rectangle, x=1200, y=300, width=300, height=100, thickness=10, color=(0, 0, 255),
-					 text_color=(255, 255, 254), text=u'Il était une fois...')
+	main_overlay.add(geometry=Shape.rectangle, x=1200, y=300, width=400, height=100, thickness=10, color=(0, 0, 255),
+					 text_color=(255, 255, 254), text=u'Pywinauto recorder 0.1.0', font_size=40)
 
 
 
 	main_overlay.add(geometry=Shape.rectangle, x=500, y=100, width=300, height=100, thickness=10, color=(0, 255, 0),
 					 brush=Brush.solid, brush_color=(255, 0, 255), text=u'Il était deux fois...')
-	main_overlay.add(geometry=Shape.rectangle, x=100, y=500, width=300, height=100, thickness=0, color=(0, 0, 255),
-					 brush=Brush.solid, brush_color=(255, 0, 255), text=u'Il était trois fois...')
 
 	main_overlay.add(geometry=Shape.rectangle, x=201, y=423, width=6, height=1, thickness=1, color=(255, 0, 0),
 					 brush=Brush.solid, brush_color=(255, 0, 255))
@@ -311,9 +357,23 @@ if __name__ == '__main__':
 	main_overlay.add(geometry=Shape.ellipse, x=10, y=800, width=40, height=40,
 					 color=(255, 0, 0), thickness=2, brush=Brush.solid, brush_color=(255, 255, 254))
 
+	overlay_add_pywinauto_recorder_icon(main_overlay, 100, 495)
 
-
-
+	overlay_add_pywinauto_recorder_icon2(main_overlay, 350, 495)
 
 	main_overlay.refresh()
-	time.sleep(99.0)
+
+
+	time.sleep(1)
+	animated_overlay = Overlay(frequency=25)
+	animated_overlay.refresh()
+
+	x, y = 350, 600
+	for i in range(1000):
+		animated_overlay.clear_all()
+		overlay_add_pywinauto_recorder_icon2(animated_overlay, x, y)
+		x = x + 2
+		time.sleep(1./25.)
+
+
+	#time.sleep(99.0)

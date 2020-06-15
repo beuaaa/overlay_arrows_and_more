@@ -6,4 +6,4 @@
 
 __version__ = "0.3.2"
 
-from overlay import *
+from .overlay import *

@@ -9,6 +9,7 @@ from enum import Enum
 from datetime import datetime
 from uuid import uuid4
 
+import math
 
 class Shape(Enum):
 	rectangle = 0
@@ -99,6 +100,11 @@ class Overlay(Thread):
 					else:
 						thickness = 0
 
+					if 'angle' in r:
+						angle = r['angle']
+					else:
+						angle = 0
+
 					if 'geometry' in r and r['geometry'] is Shape.triangle:
 						vertices = ()
 						for xyrgb in xyrgb_array:
@@ -164,9 +170,16 @@ class Overlay(Thread):
 							win32gui.Ellipse(hdc, int(round(x)), int(round(y)), int(round(x + width)), int(round(y + height)))
 						elif r['geometry'] is Shape.arrow:
 							a = thickness
-							t = ((x - int(a * 1.4), y), (x - a * 4, y + a * 3), (x, y), (x - a * 4, y - a * 3),
-								 (x - int(a * 1.4), y), (x - a * 9, y))
+							r_angle = angle*(math.pi/180)
+							Py_XFORM = win32gui.GetWorldTransform(hdc)
+							win32gui.SetWorldTransform(hdc,
+													   {'M11': math.cos(r_angle), 'M12': math.sin(r_angle),
+														'M21': math.sin(r_angle) * -1, 'M22': math.cos(r_angle),
+														'Dx': x, 'Dy': y})
+							t = ((int(a * 1.4), 0), ((a * 4), a * 3), (0, 0), ((a * 4), - a * 3),
+								 ((int(a * 1.4)), 0), ((a * 9), 0))
 							win32gui.Polyline(hdc, t)
+							win32gui.SetWorldTransform(hdc, Py_XFORM)
 						elif r['geometry'] is Shape.triangle:
 							t = ()
 							for xyrgb in xyrgb_array:
@@ -333,7 +346,7 @@ if __name__ == '__main__':
 
 
 	main_overlay.add(geometry=Shape.rectangle, x=800, y=500, width=300, height=100, thickness=8, color=(0, 255, 0))
-	main_overlay.add(geometry=Shape.arrow, x=800, y=500, width=1, height=1, thickness=8, color=(0, 0, 255))
+	main_overlay.add(geometry=Shape.arrow, x=800, y=500, thickness=8, color=(0, 0, 255), angle=90)
 
 	main_overlay.add( geometry=Shape.rectangle, x=10, y=10, width=40, height=40,
 		color=(0, 0, 0), thickness=1, brush=Brush.solid, brush_color=(255, 255, 254))
@@ -356,10 +369,13 @@ if __name__ == '__main__':
 	animated_overlay.refresh()
 
 	x, y = 350, 600
+	a = 0.0
 	for i in range(1000):
 		animated_overlay.clear_all()
 		overlay_add_pywinauto_recorder_icon2(animated_overlay, x, y)
-		x = x + 1
+		animated_overlay.add(geometry=Shape.arrow, x=x, y=y, thickness=7, color=(0, 0, 255), angle=a)
+		x += 1
+		a += 0.9
 		time.sleep(1./25.)
 
 

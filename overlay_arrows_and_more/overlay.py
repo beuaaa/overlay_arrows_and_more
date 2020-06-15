@@ -5,7 +5,6 @@ import win32con
 import win32gui
 from threading import Timer
 from threading import Thread
-from threading import Lock
 from enum import Enum
 from datetime import datetime
 from uuid import uuid4
@@ -31,8 +30,6 @@ class Brush(Enum):
 class Overlay(Thread):
 	def __init__(self, **parameters):
 		Thread.__init__(self)
-		self.lock = Lock()
-		self.lock2 = Lock()
 		self.h_window = None
 		self.graphical_elements = []
 		self.class_name = datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
@@ -62,7 +59,6 @@ class Overlay(Thread):
 				win32gui.SetGraphicsMode(hdc, win32con.GM_ADVANCED)
 				win32gui.BringWindowToTop(h_wnd)
 
-				self.lock.acquire()
 				for r in self.graphical_elements:
 
 					if 'geometry' in r:
@@ -218,7 +214,6 @@ class Overlay(Thread):
 						win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format)
 
 						win32gui.SelectObject(hdc, old_font)
-				self.lock.release()
 				win32gui.EndPaint(h_wnd, paint_struct)
 				return 0
 			else:
@@ -262,27 +257,17 @@ class Overlay(Thread):
 		win32gui.PumpMessages()
 
 	def refresh(self):
-		self.lock2.acquire()
 		win32gui.InvalidateRect(self.h_window, None, True)
-		self.lock2.release()
 
 	def auto_refresh(self):
 		self.refresh()
 		Timer(self.period, self.auto_refresh).start()
 
 	def add(self, **geometry):
-		self.lock2.acquire()
-		self.lock.acquire()
 		self.graphical_elements.append(geometry)
-		self.lock.release()
-		self.lock2.release()
 
 	def clear_all(self):
-		self.lock2.acquire()
-		self.lock.acquire()
 		del self.graphical_elements[:]
-		self.lock.release()
-		self.lock2.release()
 
 
 def overlay_add_pywinauto_recorder_icon(overlay, x, y):
@@ -346,7 +331,9 @@ if __name__ == '__main__':
 	main_overlay.add(geometry=Shape.rectangle, x=201, y=423, width=6, height=1, thickness=1, color=(255, 0, 0),
 					 brush=Brush.solid, brush_color=(255, 0, 255))
 
-	main_overlay.add(geometry=Shape.arrow, x=800, y=500, width=300, height=100, thickness=8, color=(0, 0, 255))
+
+	main_overlay.add(geometry=Shape.rectangle, x=800, y=500, width=300, height=100, thickness=8, color=(0, 255, 0))
+	main_overlay.add(geometry=Shape.arrow, x=800, y=500, width=1, height=1, thickness=8, color=(0, 0, 255))
 
 	main_overlay.add( geometry=Shape.rectangle, x=10, y=10, width=40, height=40,
 		color=(0, 0, 0), thickness=1, brush=Brush.solid, brush_color=(255, 255, 254))
@@ -365,14 +352,14 @@ if __name__ == '__main__':
 
 
 	time.sleep(1)
-	animated_overlay = Overlay(frequency=25)
+	animated_overlay = Overlay(frequency=25.)
 	animated_overlay.refresh()
 
 	x, y = 350, 600
 	for i in range(1000):
 		animated_overlay.clear_all()
 		overlay_add_pywinauto_recorder_icon2(animated_overlay, x, y)
-		x = x + 2
+		x = x + 1
 		time.sleep(1./25.)
 
 

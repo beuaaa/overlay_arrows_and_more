@@ -1,3 +1,4 @@
+|PyPI version| |License|
 
 ***********************
 Overlay arrays and more
@@ -45,3 +46,10 @@ Functions
 **********************
 
 To be completed
+
+
+.. |PyPI version| image:: https://img.shields.io/pypi/v/overlay-arrows-and-more.svg
+   :target: https://pypi.org/project/overlay-arrows-and-more/
+.. |License| image:: https://img.shields.io/badge/License-MIT-yellow.svg
+   :target: https://opensource.org/licenses/MIT/
+   :alt: Repository License

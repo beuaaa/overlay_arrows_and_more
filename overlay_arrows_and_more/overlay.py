@@ -180,7 +180,7 @@ class Overlay(Thread):
 								 ((int(a * 1.4)), 0), ((a * 9), 0))
 							win32gui.Polyline(hdc, t)
 							win32gui.SetWorldTransform(hdc, Py_XFORM)
-						elif r['geometry'] is Shape.triangle:
+						elif r['geometry'] is Shape.triangle and thickness > 0:
 							t = ()
 							for xyrgb in xyrgb_array:
 								t = t + ((int(round(xyrgb[0])), int(round(xyrgb[1]))),)
@@ -351,7 +351,7 @@ if __name__ == '__main__':
 	main_overlay.add( geometry=Shape.rectangle, x=10, y=10, width=40, height=40,
 		color=(0, 0, 0), thickness=1, brush=Brush.solid, brush_color=(255, 255, 254))
 
-	main_overlay.add(geometry=Shape.triangle, thickness=1, color=(0,0,0),
+	main_overlay.add(geometry=Shape.triangle, thickness=0, color=(0,0,0),
 					 xyrgb_array=((15, 15, 255, 0, 0), (15, 45, 0, 255, 0), (45, 30, 0, 0, 255)))
 
 	main_overlay.add(geometry=Shape.ellipse, x=10, y=800, width=40, height=40,

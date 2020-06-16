@@ -11,11 +11,16 @@ from uuid import uuid4
 
 import math
 
+from ctypes import *
+CreateIconFromResourceEx = windll.user32.CreateIconFromResourceEx
+
+
 class Shape(Enum):
 	rectangle = 0
 	ellipse = 1
 	arrow = 2
 	triangle = 3
+	image = 4
 
 
 class Brush(Enum):
@@ -162,6 +167,23 @@ class Overlay(Thread):
 						old_brush = win32gui.SelectObject(hdc, my_brush)
 					pen = win32gui.CreatePen(win32con.PS_GEOMETRIC, thickness, win32api.RGB(color_r, color_g, color_b))
 					old_pen = win32gui.SelectObject(hdc, pen)
+
+					if 'center_of_rotation' in r:
+						center_of_rotation_x = r['center_of_rotation'][0]
+						center_of_rotation_y = r['center_of_rotation'][1]
+					else:
+						center_of_rotation_x = 0
+						center_of_rotation_y = 0
+
+					if angle != 0:
+						r_angle = angle * (math.pi / 180)
+						Py_XFORM = win32gui.GetWorldTransform(hdc)
+						win32gui.SetWorldTransform(hdc,
+												   {'M11': math.cos(r_angle), 'M12': math.sin(r_angle),
+													'M21': math.sin(r_angle) * -1, 'M22': math.cos(r_angle),
+													'Dx': x, 'Dy': y})
+						x, y = -center_of_rotation_x, -center_of_rotation_y
+
 					if 'geometry' in r:
 						if r['geometry'] is Shape.rectangle:
 							win32gui.Rectangle(
@@ -170,22 +192,20 @@ class Overlay(Thread):
 							win32gui.Ellipse(hdc, int(round(x)), int(round(y)), int(round(x + width)), int(round(y + height)))
 						elif r['geometry'] is Shape.arrow:
 							a = thickness
-							r_angle = angle*(math.pi/180)
-							Py_XFORM = win32gui.GetWorldTransform(hdc)
-							win32gui.SetWorldTransform(hdc,
-													   {'M11': math.cos(r_angle), 'M12': math.sin(r_angle),
-														'M21': math.sin(r_angle) * -1, 'M22': math.cos(r_angle),
-														'Dx': x, 'Dy': y})
-							t = ((int(a * 1.4), 0), ((a * 4), a * 3), (0, 0), ((a * 4), - a * 3),
-								 ((int(a * 1.4)), 0), ((a * 9), 0))
+							t = ((x - int(a * 1.4), y), (x - a * 4, y + a * 3), (x, y), (x - a * 4, y - a * 3),
+								 (x - int(a * 1.4), y), (x - a * 9, y))
 							win32gui.Polyline(hdc, t)
-							win32gui.SetWorldTransform(hdc, Py_XFORM)
+						elif r['geometry'] is Shape.image:
+							hicon = r['hicon']
+							win32gui.DrawIconEx(hdc, x, y, hicon, 0, 0, 0, None, 0x0003)
 						elif r['geometry'] is Shape.triangle and thickness > 0:
 							t = ()
 							for xyrgb in xyrgb_array:
 								t = t + ((int(round(xyrgb[0])), int(round(xyrgb[1]))),)
 							t = t + ((int(round(xyrgb_array[0][0])), int(round(xyrgb_array[0][1]))),)
 							win32gui.Polyline(hdc, t)
+						if angle != 0:
+							win32gui.SetWorldTransform(hdc, Py_XFORM)
 						win32gui.SelectObject(hdc, old_pen)
 
 					if 'brush' in r and width > 1 and height > 1:
@@ -283,29 +303,11 @@ class Overlay(Thread):
 		del self.graphical_elements[:]
 
 
-def overlay_add_pywinauto_recorder_icon(overlay, x, y):
-	overlay.add(geometry=Shape.rectangle, x=x, y=y, width=200, height=100, thickness=5, color=(200, 66, 66),
-					 brush=Brush.solid, brush_color=(255, 254, 255))
-	overlay.add(geometry=Shape.rectangle, x=x+5, y=y+15, width=190, height=38, thickness=0,
-					 brush=Brush.solid, brush_color=(255, 254, 255), text_color=(66, 66, 66),
-					 text=u'PYWINAUTO', font_size=36, font_name='Times New Roman')
-	overlay.add(geometry=Shape.rectangle, x=x+20, y=y+50, width=160, height=38, thickness=0,
-					brush=Brush.solid, brush_color=(255, 254, 255), text_color=(200, 40, 40),
-					 text=u'recorder', font_size=50, font_name='Times New Roman')
-
-
-def overlay_add_pywinauto_recorder_icon2(overlay, x, y):
-	overlay.add(
-		geometry=Shape.rectangle, x=x, y=y, width=200, height=100, thickness=5, color=(200, 66, 66),
-		brush=Brush.solid, brush_color=(255, 254, 255))
-	overlay.add(
-		geometry=Shape.rectangle, x=x+5, y=y+15, width=190, height=38, thickness=0,
-		brush=Brush.solid, brush_color=(255, 254, 255), text_color=(66, 66, 66),
-		text=u'PYWINAUTO', font_size=44, font_name='Impact')
-	overlay.add(
-		geometry=Shape.rectangle, x=x+20, y=y+50, width=160, height=38, thickness=0,
-		brush=Brush.solid, brush_color=(255, 254, 255), text_color=(200, 40, 40),
-		text=u'recorder', font_size=48, font_name='Arial Black')
+def load_png(filename, size_x, size_y):
+	LR_DEFAULTCOLOR = 0
+	with open(filename, "rb") as f:
+		png = f.read()
+	return CreateIconFromResourceEx(png, len(png), 1, 0x30000, size_x, size_y, LR_DEFAULTCOLOR)
 
 
 if __name__ == '__main__':
@@ -345,8 +347,8 @@ if __name__ == '__main__':
 					 brush=Brush.solid, brush_color=(255, 0, 255))
 
 
-	main_overlay.add(geometry=Shape.rectangle, x=800, y=500, width=300, height=100, thickness=8, color=(0, 255, 0))
-	main_overlay.add(geometry=Shape.arrow, x=800, y=500, thickness=8, color=(0, 0, 255), angle=90)
+	main_overlay.add(geometry=Shape.rectangle, x=800, y=500, width=300, height=100, thickness=8, color=(0, 255, 0), angle=45)
+	main_overlay.add(geometry=Shape.arrow, x=800, y=500, thickness=8, color=(0, 0, 255), angle=-180)
 
 	main_overlay.add( geometry=Shape.rectangle, x=10, y=10, width=40, height=40,
 		color=(0, 0, 0), thickness=1, brush=Brush.solid, brush_color=(255, 255, 254))
@@ -357,23 +359,21 @@ if __name__ == '__main__':
 	main_overlay.add(geometry=Shape.ellipse, x=10, y=800, width=40, height=40,
 					 color=(255, 0, 0), thickness=2, brush=Brush.solid, brush_color=(255, 255, 254))
 
-	overlay_add_pywinauto_recorder_icon(main_overlay, 100, 495)
-
-	overlay_add_pywinauto_recorder_icon2(main_overlay, 350, 495)
 
 	main_overlay.refresh()
 
+	hicon = load_png(r'R:\dice.png', 400, 300)
 
 	time.sleep(1)
-	animated_overlay = Overlay(frequency=25.)
+	animated_overlay = Overlay(transparency=0.5, frequency=25.)
 	animated_overlay.refresh()
 
 	x, y = 350, 600
 	a = 0.0
 	for i in range(1000):
 		animated_overlay.clear_all()
-		overlay_add_pywinauto_recorder_icon2(animated_overlay, x, y)
-		animated_overlay.add(geometry=Shape.arrow, x=x, y=y, thickness=7, color=(0, 0, 255), angle=a)
+		animated_overlay.add(geometry=Shape.image, hicon=hicon, x=x, y=y, angle=a, center_of_rotation=(200, 150))
+		animated_overlay.add(geometry=Shape.arrow, x=x, y=y, thickness=7, color=(0, 0, 255))
 		x += 1
 		a += 0.9
 		time.sleep(1./25.)

@@ -16,7 +16,7 @@ setup(
     description='overlay arrows and more',
     long_description=long_description,
     long_description_content_type="text/x-rst",
-    install_requires=['pywin32, enum34, setuptools'],
+    install_requires=['pywin32', 'enum34', 'setuptools'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',

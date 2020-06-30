@@ -1,0 +1,3 @@
+pywin32~=223
+enum34~=1.1.6
+setuptools~=40.4.3

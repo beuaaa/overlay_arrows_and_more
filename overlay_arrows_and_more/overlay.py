@@ -361,8 +361,8 @@ if __name__ == '__main__':
 
 
 	main_overlay.refresh()
+	hicon = load_png(r'C:\Users\d_pra\PycharmProjects\pywinauto_recorder\Images\Download.png', 40, 40)
 
-	hicon = load_png(r'R:\dice.png', 400, 300)
 
 	time.sleep(1)
 	animated_overlay = Overlay(transparency=0.5, frequency=25.)
@@ -372,7 +372,8 @@ if __name__ == '__main__':
 	a = 0.0
 	for i in range(1000):
 		animated_overlay.clear_all()
-		animated_overlay.add(geometry=Shape.image, hicon=hicon, x=x, y=y, angle=a, center_of_rotation=(200, 150))
+		animated_overlay.add(geometry=Shape.image, hicon=hicon, x=120, y=700)
+		animated_overlay.add(geometry=Shape.image, hicon=hicon, x=x, y=y, angle=a, center_of_rotation=(20, 20))
 		animated_overlay.add(geometry=Shape.arrow, x=x, y=y, thickness=7, color=(0, 0, 255))
 		x += 1
 		a += 0.9

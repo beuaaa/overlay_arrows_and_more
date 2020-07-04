@@ -2,24 +2,37 @@ from setuptools import setup
 
 import os.path
 import sys
+import codecs
 
 
-# We need the path to setup.py to be able to run
-# the setup from a different folder
+def read(rel_path):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with codecs.open(os.path.join(here, rel_path), 'r') as fp:
+        return fp.read()
+
+
+def get_version(rel_path):
+    for line in read(rel_path).splitlines():
+        if line.startswith('__version__'):
+            separator = '"' if '"' in line else "'"
+            return line.split(separator)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
+
+
+# We need the path to setup.py to be able to run the setup from a different folder
 def setup_path(path=""):
-    # get the path to the setup file
+    """ Get the path to the setup file. """
     setup_path = os.path.abspath(os.path.split(__file__)[0])
-
     return os.path.join(setup_path, path)
 
 
-# add it to the system path
-sys.path.append(setup_path())
+sys.path.append(setup_path())   # add it to the system path
 
 if sys.platform == 'win32':
     install_requires = ['enum34']
     try:
-        import win32api # check if it was already installed manually
+        import win32api     # check if it was already installed manually
     except ImportError:
         install_requires.append('pywin32')
 
@@ -28,7 +41,7 @@ with open("README.rst", "r") as fh:
 
 setup(
     name='overlay_arrows_and_more',
-    version='0.3.9',
+    version=get_version("overlay_arrows_and_more/__init__.py"),
     packages=['overlay_arrows_and_more'],
     url='https://github.com/beuaaa/overlay_arrows_and_more',
     license='MIT',

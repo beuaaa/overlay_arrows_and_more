@@ -241,7 +241,10 @@ class Overlay(Thread):
 							text_bg_color_b = brush_color_b
 						win32gui.SetBkMode(hdc, win32con.TRANSPARENT)
 						win32gui.SetBkColor(hdc, win32api.RGB(text_bg_color_r, text_bg_color_g, text_bg_color_b))
-						text_format = win32con.DT_CENTER | win32con.DT_SINGLELINE | win32con.DT_VCENTER
+						if 'text_format' in r:
+							text_format = eval(r['text_format'])
+						else:
+							text_format = win32con.DT_CENTER | win32con.DT_SINGLELINE | win32con.DT_VCENTER
 						tuple_r = tuple([int(round(x)), int(round(y)), int(round(x + width)), int(round(y + height))])
 						win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format | win32con.DT_CALCRECT)
 						win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format)
@@ -310,6 +313,10 @@ def load_png(filename, size_x, size_y):
 	return CreateIconFromResourceEx(png, len(png), 1, 0x30000, size_x, size_y, LR_DEFAULTCOLOR)
 
 
+def load_ico(filename, size_x, size_y):
+	return win32gui.LoadImage(0, filename, win32con.IMAGE_ICON, size_x, size_y, win32con.LR_LOADFROMFILE)
+
+
 if __name__ == '__main__':
 	import time
 
@@ -336,7 +343,10 @@ if __name__ == '__main__':
 					 )
 
 	main_overlay.add(geometry=Shape.rectangle, x=1200, y=300, width=400, height=100, thickness=10, color=(0, 0, 255),
-					 text_color=(255, 255, 254), text=u'Pywinauto recorder 0.1.0', font_size=40)
+					 text_color=(255, 255, 254),
+					 text=u'Pywinauto recorder 0.1.0\n blabla blabla blabla blabla blabla blabla',
+					 text_format="win32con.DT_CENTER | win32con.DT_NOCLIP | win32con.DT_VCENTER",
+					 font_size=40)
 
 
 
@@ -361,7 +371,7 @@ if __name__ == '__main__':
 
 
 	main_overlay.refresh()
-	hicon = load_png(r'C:\Users\d_pra\PycharmProjects\pywinauto_recorder\Images\Download.png', 40, 40)
+	hicon = load_ico(r'C:\Users\oktalse\PycharmProjects\pywinauto_recorder\Icons\play.ico', 48, 48)
 
 
 	time.sleep(1)

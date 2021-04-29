@@ -60,6 +60,11 @@ class Overlay(Thread):
 			:param h_wnd: an input argument
 			:returns: nothing
 			"""
+			if message == win32con.WM_QUIT:
+				# print("Closing the window overlay")
+				win32gui.PostQuitMessage(0)
+				return 0
+			
 			if message == win32con.WM_PAINT:
 				hdc, paint_struct = win32gui.BeginPaint(h_wnd)
 				win32gui.SetGraphicsMode(hdc, win32con.GM_ADVANCED)
@@ -113,7 +118,7 @@ class Overlay(Thread):
 					if 'geometry' in r and r['geometry'] is Shape.triangle:
 						vertices = ()
 						for xyrgb in xyrgb_array:
-							vertices = vertices + ({'x': int(round(xyrgb[0])) , 'y': int(round(xyrgb[1])),
+							vertices = vertices + ({'x': int(round(xyrgb[0])), 'y': int(round(xyrgb[1])),
 													'Red': xyrgb[2] * 256,
 													'Green': xyrgb[3] * 256,
 													'Blue': xyrgb[4] * 256,
@@ -183,7 +188,12 @@ class Overlay(Thread):
 													'M21': math.sin(r_angle) * -1, 'M22': math.cos(r_angle),
 													'Dx': x, 'Dy': y})
 						x, y = -center_of_rotation_x, -center_of_rotation_y
-
+					
+					if 'text_format' in r:
+						text_format = eval(r['text_format'])
+					else:
+						text_format = win32con.DT_CENTER | win32con.DT_SINGLELINE | win32con.DT_VCENTER
+						
 					if 'geometry' in r:
 						if r['geometry'] is Shape.rectangle:
 							win32gui.Rectangle(
@@ -241,13 +251,28 @@ class Overlay(Thread):
 							text_bg_color_b = brush_color_b
 						win32gui.SetBkMode(hdc, win32con.TRANSPARENT)
 						win32gui.SetBkColor(hdc, win32api.RGB(text_bg_color_r, text_bg_color_g, text_bg_color_b))
-						if 'text_format' in r:
-							text_format = eval(r['text_format'])
-						else:
-							text_format = win32con.DT_CENTER | win32con.DT_SINGLELINE | win32con.DT_VCENTER
 						tuple_r = tuple([int(round(x)), int(round(y)), int(round(x + width)), int(round(y + height))])
-						win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format | win32con.DT_CALCRECT)
+						#win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format | win32con.DT_CALCRECT)
 						win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format)
+						
+						"""
+						text_format = win32con.DT_LEFT|win32con.DT_TOP|win32con.DT_WORDBREAK|win32con.DT_NOCLIP
+						text = "xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx"
+						drawrect = win32gui.DrawText(hdc, text, -1, tuple_r, text_format | win32con.DT_CALCRECT)
+						win32gui.DrawText(hdc, text, -1, tuple_r, text_format)
+						
+						l = drawrect[1][0]
+						t = drawrect[1][1]
+						r = drawrect[1][2]
+						b = drawrect[1][3]
+						height = b - t
+						rect = (l, t + height, r, b + height)
+						text2 = "xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx"
+						#win32gui.DrawText(hdc, text2, -1, rect, text_format)
+						"""
+						
+						
+						
 
 						win32gui.SelectObject(hdc, old_font)
 				win32gui.EndPaint(h_wnd, paint_struct)
@@ -290,7 +315,9 @@ class Overlay(Thread):
 
 		if self.period > 0:
 			self.auto_refresh()
+		#print("PumpMessages start")
 		win32gui.PumpMessages()
+		#print("Overlay quit")
 
 	def refresh(self):
 		win32gui.InvalidateRect(self.h_window, None, True)
@@ -304,6 +331,10 @@ class Overlay(Thread):
 
 	def clear_all(self):
 		del self.graphical_elements[:]
+		
+	def quit(self):
+		win32gui.SendMessage(self.h_window, win32con.WM_QUIT, 0, 0)
+		self.join()
 
 
 def load_png(filename, size_x, size_y):
@@ -342,10 +373,11 @@ if __name__ == '__main__':
 					 xyrgb_array=((815, 150, 255, 0, 0), (1400, 150, 0, 255, 0), (1400, 800, 0, 0, 255)),
 					 )
 
-	main_overlay.add(geometry=Shape.rectangle, x=1200, y=300, width=400, height=100, thickness=10, color=(0, 0, 255),
+	main_overlay.add(geometry=Shape.rectangle, x=1200, y=300, width=400, height=0, thickness=10, color=(0, 0, 255),
 					 text_color=(255, 255, 254),
-					 text=u'Pywinauto recorder 0.1.0\n blabla blabla blabla blabla blabla blabla',
-					 text_format="win32con.DT_CENTER | win32con.DT_NOCLIP | win32con.DT_VCENTER",
+					 text=u'Pywinauto recorder 0.1.0 blabla blabla blabla blabla blabla blabla xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx\n aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa\n aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa\n aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa',
+					 # text_format="win32con.DT_CENTER | win32con.DT_NOCLIP | win32con.DT_VCENTER",
+					 text_format="win32con.DT_LEFT | win32con.DT_TOP | win32con.DT_WORDBREAK | win32con.DT_WORD_ELLIPSIS | win32con.DT_NOCLIP",
 					 font_size=40)
 
 
@@ -368,19 +400,27 @@ if __name__ == '__main__':
 
 	main_overlay.add(geometry=Shape.ellipse, x=10, y=800, width=40, height=40,
 					 color=(255, 0, 0), thickness=2, brush=Brush.solid, brush_color=(255, 255, 254))
+	
 
-
+	
 	main_overlay.refresh()
-	hicon = load_ico(r'C:\Users\oktalse\PycharmProjects\pywinauto_recorder\Icons\play.ico', 48, 48)
+	time.sleep(2)
+	transparent_overlay.quit()
+	main_overlay.quit()
+
+	
+	hicon = load_ico(r'C:\Users\oktalse\PycharmProjects\pywinauto_recorder\pywinauto_recorder\Icons\play.ico', 48, 48)
 
 
 	time.sleep(1)
 	animated_overlay = Overlay(transparency=0.5, frequency=25.)
 	animated_overlay.refresh()
+	
 
+	
 	x, y = 350, 600
 	a = 0.0
-	for i in range(1000):
+	for i in range(100):
 		animated_overlay.clear_all()
 		animated_overlay.add(geometry=Shape.image, hicon=hicon, x=120, y=700)
 		animated_overlay.add(geometry=Shape.image, hicon=hicon, x=x, y=y, angle=a, center_of_rotation=(20, 20))
@@ -390,4 +430,5 @@ if __name__ == '__main__':
 		time.sleep(1./25.)
 
 
-	#time.sleep(99.0)
+	
+	animated_overlay.quit()

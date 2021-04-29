@@ -252,28 +252,7 @@ class Overlay(Thread):
 						win32gui.SetBkMode(hdc, win32con.TRANSPARENT)
 						win32gui.SetBkColor(hdc, win32api.RGB(text_bg_color_r, text_bg_color_g, text_bg_color_b))
 						tuple_r = tuple([int(round(x)), int(round(y)), int(round(x + width)), int(round(y + height))])
-						#win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format | win32con.DT_CALCRECT)
 						win32gui.DrawTextW(hdc, text, -1, tuple_r, text_format)
-						
-						"""
-						text_format = win32con.DT_LEFT|win32con.DT_TOP|win32con.DT_WORDBREAK|win32con.DT_NOCLIP
-						text = "xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx"
-						drawrect = win32gui.DrawText(hdc, text, -1, tuple_r, text_format | win32con.DT_CALCRECT)
-						win32gui.DrawText(hdc, text, -1, tuple_r, text_format)
-						
-						l = drawrect[1][0]
-						t = drawrect[1][1]
-						r = drawrect[1][2]
-						b = drawrect[1][3]
-						height = b - t
-						rect = (l, t + height, r, b + height)
-						text2 = "xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx"
-						#win32gui.DrawText(hdc, text2, -1, rect, text_format)
-						"""
-						
-						
-						
-
 						win32gui.SelectObject(hdc, old_font)
 				win32gui.EndPaint(h_wnd, paint_struct)
 				return 0

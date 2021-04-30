@@ -30,7 +30,6 @@ def setup_path(path=""):
 sys.path.append(setup_path())   # add it to the system path
 
 if sys.platform == 'win32':
-    install_requires = ['enum34']
     try:
         import win32api     # check if it was already installed manually
     except ImportError:

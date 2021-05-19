@@ -279,8 +279,8 @@ class Overlay(Thread):
 			style,
 			0,  # x
 			0,  # y
-			win32api.GetSystemMetrics(win32con.SM_CXSCREEN),  # width
-			win32api.GetSystemMetrics(win32con.SM_CYSCREEN),  # height
+			win32api.GetSystemMetrics(win32con.SM_CXVIRTUALSCREEN),  # width
+			win32api.GetSystemMetrics(win32con.SM_CYVIRTUALSCREEN),  # height
 			None,  # hWndParent
 			None,  # hMenu
 			h_instance,

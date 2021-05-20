@@ -50,6 +50,8 @@ class Overlay(Thread):
 				self.period = 1.0/frequency
 		else:
 			self.period = 0
+		self.x_min = 0
+		self.y_min = 0
 		self.daemon = True
 		self.start()
 
@@ -77,11 +79,11 @@ class Overlay(Thread):
 					else:
 						geometry = None
 					if 'x' in r:
-						x = r['x']
+						x = r['x'] - self.x_min
 					else:
 						x = 0
 					if 'y' in r:
-						y = r['y']
+						y = r['y'] - self.y_min
 					else:
 						y = 0
 					if 'width' in r:
@@ -118,7 +120,8 @@ class Overlay(Thread):
 					if 'geometry' in r and r['geometry'] is Shape.triangle:
 						vertices = ()
 						for xyrgb in xyrgb_array:
-							vertices = vertices + ({'x': int(round(xyrgb[0])), 'y': int(round(xyrgb[1])),
+							vertices = vertices + ({'x': int(round(xyrgb[0])) - self.x_min,
+							                        'y': int(round(xyrgb[1])) - self.y_min,
 													'Red': xyrgb[2] * 256,
 													'Green': xyrgb[3] * 256,
 													'Blue': xyrgb[4] * 256,
@@ -211,7 +214,7 @@ class Overlay(Thread):
 						elif r['geometry'] is Shape.triangle and thickness > 0:
 							t = ()
 							for xyrgb in xyrgb_array:
-								t = t + ((int(round(xyrgb[0])), int(round(xyrgb[1]))),)
+								t = t + ((int(round(xyrgb[0])), + int(round(xyrgb[1]))),)
 							t = t + ((int(round(xyrgb_array[0][0])), int(round(xyrgb_array[0][1]))),)
 							win32gui.Polyline(hdc, t)
 						if angle != 0:
@@ -277,8 +280,8 @@ class Overlay(Thread):
 			ex_style, wnd_class_atom,
 			'OverlayWindow',
 			style,
-			0,  # x
-			0,  # y
+			win32api.GetSystemMetrics(win32con.SM_XVIRTUALSCREEN),  # x
+			win32api.GetSystemMetrics(win32con.SM_YVIRTUALSCREEN),  # y
 			win32api.GetSystemMetrics(win32con.SM_CXVIRTUALSCREEN),  # width
 			win32api.GetSystemMetrics(win32con.SM_CYVIRTUALSCREEN),  # height
 			None,  # hWndParent
@@ -286,7 +289,10 @@ class Overlay(Thread):
 			h_instance,
 			None  # lpParam
 		)
-
+		monitors = win32api.EnumDisplayMonitors()
+		for monitor in monitors:
+			self.x_min = min([win32api.GetMonitorInfo(monitor[0])['Work'][0] for monitor in monitors])
+			self.y_min = min([win32api.GetMonitorInfo(monitor[0])['Work'][1] for monitor in monitors])
 		win32gui.SetLayeredWindowAttributes(self.h_window, 0x00ffffff, self.transparency,
 											win32con.LWA_COLORKEY | win32con.LWA_ALPHA)
 		win32gui.SetWindowPos(self.h_window, win32con.HWND_TOPMOST, 0, 0, 0, 0,
@@ -333,7 +339,7 @@ if __name__ == '__main__':
 	main_overlay = Overlay()
 	transparent_overlay = Overlay(transparency=0.5)
 
-	transparent_overlay.add(geometry=Shape.rectangle, x=300, y=300, width=100, height=100, thickness=10,
+	transparent_overlay.add(geometry=Shape.rectangle, x=300, y=800, width=100, height=1000, thickness=10,
 							color=(0, 255, 0))
 	transparent_overlay.refresh()
 

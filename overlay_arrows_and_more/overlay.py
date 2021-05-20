@@ -290,9 +290,8 @@ class Overlay(Thread):
 			None  # lpParam
 		)
 		monitors = win32api.EnumDisplayMonitors()
-		for monitor in monitors:
-			self.x_min = min([win32api.GetMonitorInfo(monitor[0])['Work'][0] for monitor in monitors])
-			self.y_min = min([win32api.GetMonitorInfo(monitor[0])['Work'][1] for monitor in monitors])
+		self.x_min = min([win32api.GetMonitorInfo(monitor[0])['Work'][0] for monitor in monitors])
+		self.y_min = min([win32api.GetMonitorInfo(monitor[0])['Work'][1] for monitor in monitors])
 		win32gui.SetLayeredWindowAttributes(self.h_window, 0x00ffffff, self.transparency,
 											win32con.LWA_COLORKEY | win32con.LWA_ALPHA)
 		win32gui.SetWindowPos(self.h_window, win32con.HWND_TOPMOST, 0, 0, 0, 0,

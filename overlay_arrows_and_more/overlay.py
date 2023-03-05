@@ -352,11 +352,13 @@ if __name__ == '__main__':
 					 xyrgb_array=((815, 150, 255, 0, 0), (1400, 150, 0, 255, 0), (1400, 800, 0, 0, 255)),
 					 )
 
-	main_overlay.add(geometry=Shape.rectangle, x=1200, y=300, width=400, height=0, thickness=10, color=(0, 0, 255),
+	main_overlay.add(geometry=Shape.rectangle, x=1200, y=300, width=400, height=800, thickness=10, color=(0, 0, 255),
 					 text_color=(255, 255, 254),
-					 text=u'Pywinauto recorder 0.1.0 blabla blabla blabla blabla blabla blabla xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx\n aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa\n aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa\n aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa',
+					 text=u'Pywinauto recorder 0.1.0 blabla blabla blabla blabla blabla blabla xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx aaaaaaaa aaaaaaaa aaaaaXXXXXaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa',
 					 # text_format="win32con.DT_CENTER | win32con.DT_NOCLIP | win32con.DT_VCENTER",
-					 text_format="win32con.DT_LEFT | win32con.DT_TOP | win32con.DT_WORDBREAK | win32con.DT_WORD_ELLIPSIS | win32con.DT_NOCLIP",
+					 #     win32gui.DrawText(hdc, text, len(text), rect, win32con.DT_LEFT | win32con.DT_WORDBREAK | win32con.DT_EXPANDTABS | win32con.DT_EDITCONTROL)
+					 text_format="win32con.DT_LEFT | win32con.DT_WORDBREAK | win32con.DT_EXPANDTABS | win32con.DT_EDITCONTROL",
+					 #text_format="win32con.DT_LEFT | win32con.DT_TOP | win32con.DT_WORDBREAK | win32con.DT_WORD_ELLIPSIS | win32con.DT_NOCLIP",
 					 font_size=40)
 
 
@@ -388,7 +390,7 @@ if __name__ == '__main__':
 	main_overlay.quit()
 
 	
-	hicon = load_ico(r'C:\Users\oktalse\PycharmProjects\pywinauto_recorder\pywinauto_recorder\Icons\play.ico', 48, 48)
+	hicon = load_ico(r'C:\Windows\System32\OneDrive.ico', 48, 48)
 
 
 	time.sleep(1)

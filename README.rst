@@ -27,7 +27,7 @@ This is a simple example:
     import time
 
     main_overlay = oaam.Overlay()
-    transparent_overlay = oaam.Overlay(transparency=128)
+    transparent_overlay = oaam.Overlay(transparency=.5)
 
     transparent_overlay.add(geometry=oaam.Shape.rectangle, x=300, y=300, width=100, height=100, thickness=10, color=(0, 255, 0))
     transparent_overlay.refresh()

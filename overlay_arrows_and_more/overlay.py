@@ -40,7 +40,10 @@ class Overlay(Thread):
 		self.graphical_elements = []
 		self.class_name = datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
 		if 'transparency' in parameters:
-			self.transparency = int(255.0*(1.0 - parameters['transparency']))
+			if 0<=parameters['transparency'] <= 1:
+				self.transparency = int(255.0*(1.0 - parameters['transparency']))
+			else:
+				raise ValueError("Transparency must be a float between 0.0 and 1.0")
 		else:
 			self.transparency = 255
 		self.period = 0

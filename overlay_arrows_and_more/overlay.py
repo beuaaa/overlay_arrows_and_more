@@ -313,8 +313,17 @@ class Overlay(Thread):
 		self.refresh()
 		Timer(self.period, self.auto_refresh).start()
 
-	def add(self, **geometry):
-		self.graphical_elements.append(geometry)
+	def add(self, *, brush: Brush = Brush.solid,
+			brush_color: tuple = (255, 255, 255),
+			thickness: int=0, **kwargs):
+		"""Add a graphical element to the overlay.
+			:param brush: Type of brush to use for filling shapes (default is solid).
+			:param brush_color: Color of the brush (defaults to white, that is considered as transparent). Use
+			any RGB value other than white (255, 255, 255) to make the shape visible.
+			:param thickness: Thickness of the shape's outline (default is 0, which means no outline).
+			:param kwargs: any other parameters for the geometry of the shape."""
+		kwargs.update({"brush": brush, "brush_color": brush_color, "thickness": thickness})
+		self.graphical_elements.append(kwargs)
 
 	def clear_all(self):
 		del self.graphical_elements[:]

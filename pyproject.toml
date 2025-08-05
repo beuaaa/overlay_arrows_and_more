@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "overlay_arrows_and_more"
+description = "overlay arrows and more"
+dynamic = ["version", "requirements"]
+readme = "README.rst"
+license = {text = "MIT"}
+authors = [
+    {name = "david pratmarty", email = "david.pratmarty@gmail.com"}
+]
+requires-python = ">=2.7"
+
+[project.urls]
+Homepage = "https://github.com/beuaaa/overlay_arrows_and_more"
+
+[tool.setuptools]
+packages = ["overlay_arrows_and_more"]
+
+[tool.setuptools.dynamic]
+version = {attr = "overlay_arrows_and_more.__version__"}
+dependencies = {file = ["requirements.txt"]}
+
+[project.classifiers]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 2.7",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: Software Development :: User Interfaces",
+    "Topic :: Software Development :: Testing"
+]

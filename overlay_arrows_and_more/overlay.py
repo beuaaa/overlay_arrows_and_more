@@ -40,10 +40,7 @@ class Overlay(Thread):
         self.graphical_elements = []
         self.class_name = datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
         if 'transparency' in parameters:
-            if 0<=parameters['transparency'] <= 1:
-                self.transparency = int(255.0*(1.0 - parameters['transparency']))
-            else:
-                raise ValueError("Transparency must be a float between 0.0 and 1.0")
+            self.transparency = int(255.0*(1.0 - parameters['transparency']))
         else:
             self.transparency = 255
         self.period = 0
@@ -329,7 +326,7 @@ class Overlay(Thread):
             self.auto_refresh()
         #print("PumpMessages start")
         win32gui.PumpMessages()
-        #print("Overlay quit")
+    #print("Overlay quit")
 
     def refresh(self):
         win32gui.InvalidateRect(self.h_window, None, True)
@@ -348,11 +345,11 @@ class Overlay(Thread):
         :param brush_color: Color of the brush (defaults to white, that is considered as transparent). Use
                             any RGB value other than white (255, 255, 255) to make the shape visible.
         :param thickness: Thickness of the shape's outline (default is 0, which means no outline).
-                          Accepts int/float (pixels) or str percentage such as "1.5%".
+                            Accepts int/float (pixels) or str percentage such as "1.5%".
         :param kwargs: any other parameters for the geometry of the shape.
-                       x, y, width, height can be int/float (pixels) or str percentage (e.g. "50%").
-                       Examples:
-                           x="50%", y="50%", width="25%", height="10%", thickness="1.5%"
+                    x, y, width, height can be int/float (pixels) or str percentage (e.g. "50%").
+                        Examples:
+                            x="50%", y="50%", width="25%", height="10%", thickness="1.5%"
         """
         # --- convert the 5 geometrical keys -----------------------------
         for key in ('x', 'y', 'width', 'height', 'thickness'):
@@ -360,8 +357,7 @@ class Overlay(Thread):
                 base = (self.screen_width if key in ('x', 'width') else self.screen_height)
                 kwargs[key] = self._to_pixels(kwargs[key], base)
         # ----------------------------------------------------------------
-        kwargs.update({"brush": brush, "brush_color": brush_color,
-                       "thickness": kwargs.get('thickness', 0)})
+        kwargs.update({"brush": brush, "brush_color": brush_color,"thickness": kwargs.get('thickness', 0)})
         self.graphical_elements.append(kwargs)
 
     def clear_all(self):
@@ -408,18 +404,16 @@ if __name__ == '__main__':
                      xyrgb_array=((815, 150, 255, 0, 0), (1400, 150, 0, 255, 0), (1400, 800, 0, 0, 255)),
                      )
 
-    main_overlay.add(geometry=Shape.rectangle, x=1200, y=300, width=400, height=800, thickness=10, color=(0, 0, 255),
+    main_overlay.add(geometry=Shape.rectangle, x=1200, y=300, width=400, height=0, thickness=10, color=(0, 0, 255),
                      text_color=(255, 255, 254),
-                     text=u'Pywinauto recorder 0.1.0 blabla blabla blabla blabla blabla blabla xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx aaaaaaaa aaaaaaaa aaaaaXXXXXaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa',
+                     text=u'Pywinauto recorder 0.1.0 blabla blabla blabla blabla blabla blabla xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx\n aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa\n aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa\n aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa aaaaaaaa',
                      # text_format="win32con.DT_CENTER | win32con.DT_NOCLIP | win32con.DT_VCENTER",
-                     #     win32gui.DrawText(hdc, text, len(text), rect, win32con.DT_LEFT | win32con.DT_WORDBREAK | win32con.DT_EXPANDTABS | win32con.DT_EDITCONTROL)
-                     text_format="win32con.DT_LEFT | win32con.DT_WORDBREAK | win32con.DT_EXPANDTABS | win32con.DT_EDITCONTROL",
-                     #text_format="win32con.DT_LEFT | win32con.DT_TOP | win32con.DT_WORDBREAK | win32con.DT_WORD_ELLIPSIS | win32con.DT_NOCLIP",
+                     text_format="win32con.DT_LEFT | win32con.DT_TOP | win32con.DT_WORDBREAK | win32con.DT_WORD_ELLIPSIS | win32con.DT_NOCLIP",
                      font_size=40)
 
 
 
-    main_overlay.add(geometry=Shape.rectangle, x="10%", y="10%", width=300, height=100, thickness=10, color=(0, 255, 0),
+    main_overlay.add(geometry=Shape.rectangle, x=100, y="50%", width=300, height=100, thickness=10, color=(0, 255, 0),
                      brush=Brush.solid, brush_color=(255, 0, 255), text=u'Il était deux fois...')
 
     main_overlay.add(geometry=Shape.rectangle, x=201, y=423, width=6, height=1, thickness=1, color=(255, 0, 0),
@@ -430,7 +424,7 @@ if __name__ == '__main__':
     main_overlay.add(geometry=Shape.arrow, x=800, y=500, thickness=8, color=(0, 0, 255), angle=-180)
 
     main_overlay.add( geometry=Shape.rectangle, x=10, y=10, width=40, height=40,
-        color=(0, 0, 0), thickness=1, brush=Brush.solid, brush_color=(255, 255, 254))
+                      color=(0, 0, 0), thickness=1, brush=Brush.solid, brush_color=(255, 255, 254))
 
     main_overlay.add(geometry=Shape.triangle, thickness=0, color=(0,0,0),
                      xyrgb_array=((15, 15, 255, 0, 0), (15, 45, 0, 255, 0), (45, 30, 0, 0, 255)))
@@ -446,7 +440,7 @@ if __name__ == '__main__':
     main_overlay.quit()
 
 
-    hicon = load_ico(r'C:\Windows\System32\OneDrive.ico', 48, 48)
+    hicon = load_ico(r'..\..\pywinauto_recorder\pywinauto_recorder\Icons\play.ico', 48, 48)
 
 
     time.sleep(1)

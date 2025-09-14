@@ -335,10 +335,7 @@ class Overlay(Thread):
         self.refresh()
         Timer(self.period, self.auto_refresh).start()
 
-    def add(self, *, brush: Brush = Brush.solid,
-            brush_color: tuple = (255, 255, 255),
-            thickness: int  = 0,
-            **kwargs) -> None:
+    def add(self, **kwargs) -> None:
         """Add a graphical element to the overlay.
 
         :param brush: Type of brush to use for filling shapes (default is solid).
@@ -351,13 +348,15 @@ class Overlay(Thread):
                         Examples:
                             x="50%", y="50%", width="25%", height="10%", thickness="1.5%"
         """
+        kwargs.setdefault("brush", Brush.solid)
+        kwargs.setdefault("brush_color", (255, 255, 255))
+        kwargs.setdefault("thickness", 0)
         # --- convert the 5 geometrical keys -----------------------------
         for key in ('x', 'y', 'width', 'height', 'thickness'):
             if key in kwargs:
                 base = (self.screen_width if key in ('x', 'width') else self.screen_height)
                 kwargs[key] = self._to_pixels(kwargs[key], base)
         # ----------------------------------------------------------------
-        kwargs.update({"brush": brush, "brush_color": brush_color,"thickness": kwargs.get('thickness', 0)})
         self.graphical_elements.append(kwargs)
 
     def clear_all(self):

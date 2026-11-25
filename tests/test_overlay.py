@@ -26,6 +26,10 @@ from overlay_arrows_and_more import overlay as overlay_module  # noqa: E402
 RED = (255, 0, 0)
 GRAY = (128, 128, 128)
 
+# The tests check positions in captures of the screen, which are in physical pixels: on a display scaled to 125 % or
+# more, Windows enlarges the windows of a process that is not DPI aware, and the drawings would not be where expected.
+ctypes.windll.user32.SetProcessDPIAware()
+
 
 def _paint(overlay):
     """Refreshes the overlay and waits until it is painted and displayed."""

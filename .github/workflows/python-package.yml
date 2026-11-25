@@ -1,0 +1,43 @@
+# Overlay arrows and more - continuous integration on Windows
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python package
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # Versions are quoted: unquoted, YAML reads 3.10 as the number 3.1
+        python-version: ["3.8", "3.10", "3.11", "3.12", "3.13", "3.14"]
+
+    steps:
+    - uses: actions/checkout@v5
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+        allow-prereleases: true
+    - name: Install the package and the development tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e . pytest flake8 Pillow
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Show the screens
+      run: |
+        python -c "import win32api, win32con as c; print('virtual screen', [win32api.GetSystemMetrics(m) for m in (c.SM_XVIRTUALSCREEN, c.SM_YVIRTUALSCREEN, c.SM_CXVIRTUALSCREEN, c.SM_CYVIRTUALSCREEN)]); print('monitors', [win32api.GetMonitorInfo(m[0]) for m in win32api.EnumDisplayMonitors()])"
+    - name: Tests
+      run: python -m pytest tests -v

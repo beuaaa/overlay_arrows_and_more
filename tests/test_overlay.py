@@ -148,7 +148,7 @@ def test_a_position_in_percentage_starts_at_the_origin_of_the_virtual_screen(ove
 
 
 @pytest.mark.parametrize("text_format, flags", [
-    ("win32con.DT_LEFT | win32con.DT_TOP", win32con.DT_LEFT | win32con.DT_TOP),
+    ("win32con.DT_RIGHT | win32con.DT_BOTTOM", win32con.DT_RIGHT | win32con.DT_BOTTOM),
     ("win32con.DT_LEFT|win32con.DT_WORDBREAK|win32con.DT_EXPANDTABS|win32con.DT_EDITCONTROL|win32con.DT_NOCLIP",
      win32con.DT_LEFT | win32con.DT_WORDBREAK | win32con.DT_EXPANDTABS | win32con.DT_EDITCONTROL | win32con.DT_NOCLIP),
     ("DT_CENTER | DT_SINGLELINE", win32con.DT_CENTER | win32con.DT_SINGLELINE),
@@ -169,8 +169,8 @@ def test_wrong_text_format(text_format, error):
 
 
 def test_add_converts_the_text_format(overlay):
-    overlay.add(geometry=oaam.Shape.rectangle, text="Text", text_format="win32con.DT_LEFT | win32con.DT_TOP")
-    assert overlay.graphical_elements[-1]["text_format"] == win32con.DT_LEFT | win32con.DT_TOP
+    overlay.add(geometry=oaam.Shape.rectangle, text="Text", text_format="win32con.DT_RIGHT | win32con.DT_WORDBREAK")
+    assert overlay.graphical_elements[-1]["text_format"] == win32con.DT_RIGHT | win32con.DT_WORDBREAK
 
 
 @pytest.mark.parametrize("parameters, error", [
@@ -340,9 +340,9 @@ def test_drawings_identical_to_0_5_1():
     overlay_0_5_1 = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(overlay_0_5_1)
     expected = _draw_scene(overlay_0_5_1)
-    assert len(set(expected.getdata())) > 10, "the capture of the screen does not show the overlay"
+    assert len(expected.getcolors(maxcolors=1 << 24)) > 10, "the capture of the screen does not show the overlay"
     drawn = _draw_scene(oaam)
     from PIL import ImageChops
     difference = ImageChops.difference(expected, drawn)
-    different = sum(1 for pixel in difference.getdata() if pixel != (0, 0, 0))
+    different = sum(difference.point(lambda value: 255 if value else 0).convert("L").histogram()[1:])
     assert difference.getbbox() is None, "%d different pixels in %s" % (different, difference.getbbox())

@@ -20,6 +20,7 @@ Features
 - **Auto-refresh** capability with configurable frequency
 - **Multi-threaded** design for smooth performance
 - **Multi-monitor support**
+- **Context manager**: ``with Overlay() as overlay:`` closes the overlay at the end of the block
 
 Installation
 ############
@@ -28,13 +29,15 @@ Installation
 
     pip install overlay_arrows_and_more
 
+It needs Windows and Python 3.8 or later. pip also installs pywin32.
+
 
 Usage
 #####
 
 This is a simple example:
 
-.. code-block:: c
+.. code-block:: python
 
     import overlay_arrows_and_more as oaam
     import time
@@ -53,6 +56,22 @@ This is a simple example:
     time.sleep(9.0)
     main_overlay.clear_all()
     main_overlay.refresh()
+    main_overlay.quit()
+    transparent_overlay.quit()
+
+The same with ``with`` statements, which close the overlays at the end of the block:
+
+.. code-block:: python
+
+    import overlay_arrows_and_more as oaam
+    import time
+
+    with oaam.Overlay() as main_overlay, oaam.Overlay(transparency=.5) as transparent_overlay:
+        transparent_overlay.add(geometry=oaam.Shape.rectangle, x=300, y=300, width=100, height=100, thickness=10, color=(0, 255, 0))
+        transparent_overlay.refresh()
+        main_overlay.add(geometry=oaam.Shape.ellipse, x=10, y=10, width=40, height=40, thickness=1)
+        main_overlay.refresh()
+        time.sleep(9.0)
 
 Functions
 *********
@@ -68,7 +87,8 @@ Overlay
 
     Overlay(transparency=0.0, frequency=None)
 
-Main class for creating overlay windows.
+Main class for creating overlay windows. The window covers all the monitors; it has its own thread, and the
+constructor returns when the window is created.
 
 **Parameters:**
 
@@ -77,10 +97,12 @@ Main class for creating overlay windows.
 
 **Methods:**
 
-* ``add(**kwargs)``: Add a graphical element to the overlay
+* ``add(**kwargs)``: Add a graphical element to the overlay. It raises ``TypeError`` or ``ValueError`` if the element
+  cannot be drawn, for example an image without ``hicon``
 * ``refresh()``: Update the overlay display
 * ``clear_all()``: Remove all graphical elements
-* ``quit()``: Close the overlay and clean up resources
+* ``quit(timeout=None)``: Close the overlay and wait for the end of its thread, at most ``timeout`` seconds. It can be
+  called several times. ``with Overlay() as overlay:`` calls it at the end of the block
 
 Shape (Enum)
 -----------------
@@ -114,9 +136,10 @@ When adding elements with ``add()``, you can use these properties:
 
 Position and Size
 
-* x, y: Position coordinates
+* x, y: Position coordinates on the screen, in pixels, or as a percentage of the virtual screen (all the monitors),
+  such as ``"50%"``
 
-* width, height: Element dimensions
+* width, height: Element dimensions, in pixels, or as a percentage of the virtual screen
 
 Appearance
 
@@ -131,10 +154,11 @@ Text Properties
 
 * text: Text content
 * text_color: Text color as RGB tuple
-* text_bg_color: Text background color
+* text_bg_color: No effect, kept for compatibility: the background of the texts is transparent
 * font_size: Font size in pixels
 * font_name: Font family name
-* text_format: Text alignment flags
+* text_format: Text alignment flags of DrawText, such as ``win32con.DT_LEFT | win32con.DT_WORDBREAK``, or the same as a
+  string: ``"win32con.DT_LEFT | win32con.DT_WORDBREAK"``
 
 Special Properties
 
@@ -177,7 +201,6 @@ Recording Indicator
             width=100, height=20,
             text="REC",
             text_color=(255, 0, 0),
-            text_bg_color=(255, 255, 254),
             font_size=16
         )
 
@@ -213,8 +236,7 @@ Highlighted Area
         x=220, y=170,
         width=360, height=50,
         text="Click here to continue",
-        text_color=(255, 255, 255),
-        text_bg_color=(0, 0, 0),
+        text_color=(255, 255, 254),  # pure white is the transparent color
         font_size=18
     )
 
@@ -299,7 +321,7 @@ Important Notes
 * This library only works on Windows systems
 * Overlays are always on top of other windows
 * The overlay window is transparent to mouse clicks
-* Remember to call ``quit()`` to properly clean up resources
+* Remember to call ``quit()``, or to use a ``with`` statement, to properly clean up resources
 * For animated overlays, consider using the ``frequency`` parameter for smooth updates
 
 **Color Key Warning:**
@@ -309,6 +331,24 @@ Pure white ``(255, 255, 255)`` is used as a transparency key and will be invisib
 
 
 
+
+Changes
+=======
+
+0.6.0
+-----
+
+* ``quit()`` no longer blocks when it is called just after the creation of the overlay: the constructor now returns
+  when the window exists. ``quit()`` accepts a ``timeout``, and an overlay can be used in a ``with`` statement
+* The drawings are no longer shifted when the taskbar is at the top or on the left of the screen
+* An element that cannot be drawn no longer stops the drawing of the others, and ``add()`` rejects it at once
+* No more leaks of GDI objects with the texts without geometry; the rotation of such a text no longer applies to the
+  next elements
+* ``frequency``: the refresh no longer starts a new thread at each refresh, and it stops with ``quit()``
+* ``add()`` and ``clear_all()`` can be called while the overlay is drawn; ``text_format`` accepts flags, and its strings
+  are no longer evaluated by ``eval()``
+* Positions in percentage are relative to the virtual screen, which may start before (0, 0) with several monitors
+* The package depends on pywin32 (the package 0.5.1 had no dependency) and needs Python 3.8 or later
 
 .. |PyPI version| image:: https://img.shields.io/pypi/v/overlay-arrows-and-more.svg
    :target: https://pypi.org/project/overlay-arrows-and-more/

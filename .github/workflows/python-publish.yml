@@ -1,11 +1,12 @@
-# This workflows will upload a Python Package using Twine when a release is created
-# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+# Upload the Python package to PyPI when a GitHub release is published
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python#publishing-to-package-registries
 
 name: Upload Python Package
 
 on:
   release:
-    types: [created]
+    # 'published' also fires when a draft release is published ('created' does not fire for drafts)
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -14,19 +15,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
+    - name: Check that the release is the version of the package
+      if: github.event_name == 'release'
+      env:
+        TAG: ${{ github.event.release.tag_name }}
+      run: |
+        VERSION=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' overlay_arrows_and_more/__init__.py)
+        if [ "$VERSION" != "${TAG#v}" ]; then
+          echo "::error::The release $TAG is not the version of the package: __version__ = \"$VERSION\" in overlay_arrows_and_more/__init__.py"
+          exit 1
+        fi
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.x'
-    - name: Install dependencies
+    - name: Install build tools
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools wheel twine
-    - name: Build and publish
+        pip install build twine
+    - name: Build sdist and wheel (pyproject.toml)
+      run: |
+        python -m build
+        python -m twine check dist/*
+    - name: Publish to PyPI
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-      run: |
-        python setup.py sdist bdist_wheel
-        twine upload dist/*
+      run: twine upload dist/*

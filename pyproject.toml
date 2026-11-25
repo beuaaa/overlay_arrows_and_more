@@ -1,0 +1,51 @@
+[build-system]
+# setuptools 61 is the first version that reads [project]; the license is a table to keep Python 3.8
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "overlay_arrows_and_more"
+dynamic = ["version"]
+description = "Transparent windows on top of all the other windows, to draw arrows, rectangles, ellipses, triangles, images and texts"
+readme = "README.rst"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "David Pratmarty", email = "david.pratmarty@gmail.com" }]
+# Before, setup.py added pywin32 only if it was missing on the machine that built the package: the packages built on
+# Linux by the publishing workflow had no dependency
+dependencies = ['pywin32; sys_platform == "win32"']
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: User Interfaces",
+    "Topic :: Software Development :: Testing",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "flake8", "Pillow", "build", "twine"]
+
+[project.urls]
+Homepage = "https://github.com/beuaaa/overlay_arrows_and_more"
+Issues = "https://github.com/beuaaa/overlay_arrows_and_more/issues"
+
+[tool.setuptools]
+packages = ["overlay_arrows_and_more"]
+
+[tool.setuptools.dynamic]
+# read in the source, without importing the package, which needs pywin32
+version = { attr = "overlay_arrows_and_more.__version__" }

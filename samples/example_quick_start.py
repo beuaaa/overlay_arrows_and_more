@@ -4,7 +4,7 @@ import time
 # Create a semi-transparent overlay
 my_overlay = overlay.Overlay(transparency=0.5)
 
-# Add a red rectangle with background
+# Add a red rectangle with a white background, and a text on it
 my_overlay.add(
     geometry=overlay.Shape.rectangle,
     x=100, y=100,
@@ -12,16 +12,9 @@ my_overlay.add(
     color=(255, 0, 0),
     thickness=3,
     brush=overlay.Brush.solid,
-    brush_color=(255, 255, 255)  # White background for text visibility
-)
-
-# Add text with proper background
-my_overlay.add(
-    x=110, y=120,
-    width=180, height=60,
-    text="Hello World!",
+    brush_color=(255, 255, 254),  # White background: pure white (255, 255, 255) is the transparent color
+    text="Hello World!",  # The background of a text is transparent: it is drawn on the rectangle
     text_color=(0, 0, 0),  # Black text
-    text_bg_color=(255, 255, 255),  # White background
     font_size=20
 )
 

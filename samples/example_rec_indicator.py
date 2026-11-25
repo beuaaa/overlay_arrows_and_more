@@ -25,7 +25,6 @@ for i in range(20):  # Blink 20 times
         width=100, height=20,
         text="REC",
         text_color=(255, 0, 0),
-        text_bg_color=(255, 255, 255),
         font_size=16
     )
 

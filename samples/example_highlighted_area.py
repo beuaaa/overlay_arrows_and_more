@@ -15,13 +15,15 @@ highlight_overlay.add(
     brush_color=(0, 255, 0)
 )
 
-# Instruction text
+# Instruction text, in white on a black rectangle
 highlight_overlay.add(
+    geometry=overlay.Shape.rectangle,
     x=220, y=170,
     width=360, height=50,
+    brush=overlay.Brush.solid,
+    brush_color=(0, 0, 0),
     text="Click here to continue",
-    text_color=(255, 255, 255),
-    text_bg_color=(0, 0, 0),
+    text_color=(255, 255, 254),  # Pure white (255, 255, 255) is the transparent color
     font_size=18
 )
 

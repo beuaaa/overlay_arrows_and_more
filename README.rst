@@ -154,7 +154,9 @@ Text Properties
 
 * text: Text content
 * text_color: Text color as RGB tuple
-* text_bg_color: No effect, kept for compatibility: the background of the texts is transparent
+* text_bg_color: No effect, kept for compatibility: the background of the texts is transparent, so that a text is drawn
+  on what is below it, the shape of the same element included. For a text on a colored background, give the element a
+  ``geometry=Shape.rectangle`` with a ``brush_color``
 * font_size: Font size in pixels
 * font_name: Font family name
 * text_format: Text alignment flags of DrawText, such as ``win32con.DT_LEFT | win32con.DT_WORDBREAK``, or the same as a
@@ -231,12 +233,15 @@ Highlighted Area
         brush_color=(0, 255, 0)
     )
 
-    # Instruction text
+    # Instruction text, in white on a black rectangle
     highlight_overlay.add(
+        geometry=overlay.Shape.rectangle,
         x=220, y=170,
         width=360, height=50,
+        brush=overlay.Brush.solid,
+        brush_color=(0, 0, 0),
         text="Click here to continue",
-        text_color=(255, 255, 254),  # pure white is the transparent color
+        text_color=(255, 255, 254),  # pure white (255, 255, 255) is the transparent color
         font_size=18
     )
 

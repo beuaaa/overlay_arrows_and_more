@@ -16,11 +16,13 @@ overlay.add(
 )
 
 overlay.add(
+    geometry=Shape.rectangle,
     x=80, y=50,
     width=60, height=20,
+    brush=Brush.solid,
+    brush_color=(0, 0, 0),  # Black background
     text="REC",
     text_color=(255, 0, 0),
-    text_bg_color=(0, 0, 0),
     font_size=16,
     font_name="Arial"
 )
@@ -34,7 +36,7 @@ overlay.add(
     thickness=5,
     color=(0, 255, 0),  # Green
     brush=Brush.solid,
-    brush_color=(0, 255, 0, 50)  # Semi-transparent green
+    brush_color=(0, 255, 0)  # Green: the transparency is the one of the overlay, for all its elements
 )
 
 # Example 3: Directional arrow

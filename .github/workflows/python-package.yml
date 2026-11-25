@@ -29,13 +29,17 @@ jobs:
     - name: Install the package and the development tools
       run: |
         python -m pip install --upgrade pip
-        pip install -e . pytest flake8 Pillow
+        pip install -e ".[dev]"
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Build sdist and wheel
+      run: |
+        python -m build
+        python -m twine check dist/*
     - name: Show the screens
       run: |
         python -c "import win32api, win32con as c; print('virtual screen', [win32api.GetSystemMetrics(m) for m in (c.SM_XVIRTUALSCREEN, c.SM_YVIRTUALSCREEN, c.SM_CXVIRTUALSCREEN, c.SM_CYVIRTUALSCREEN)]); print('monitors', [win32api.GetMonitorInfo(m[0]) for m in win32api.EnumDisplayMonitors()])"

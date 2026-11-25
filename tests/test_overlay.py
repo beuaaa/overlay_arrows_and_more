@@ -241,6 +241,13 @@ def test_no_gdi_object_leak(overlay):
     assert _gdi_objects() - gdi_objects < 10
 
 
+def test_the_package_needs_pywin32():
+    """Before, the packages built on Linux by the publishing workflow had no dependency."""
+    import importlib.metadata
+    assert 'pywin32; sys_platform == "win32"' in importlib.metadata.requires("overlay_arrows_and_more")
+    assert importlib.metadata.version("overlay_arrows_and_more") == oaam.__version__
+
+
 def test_module_exports():
     assert set(overlay_module.__all__) == {"Shape", "Brush", "Overlay", "load_png", "load_ico"}
     assert not hasattr(oaam, "Thread")  # before, "from .overlay import *" also exported Thread, Timer, windll...

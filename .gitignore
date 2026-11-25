@@ -3,4 +3,5 @@
 /build/
 /dist/
 /overlay_arrows_and_more.egg-info/
+__pycache__/
 upload_pypi.bat
